@@ -1,4 +1,7 @@
-export interface RuntimeConfiguration {
+export interface ContainerConfiguration {
+    id: string;
+    // Container name
+    name: string
     // Docker image
     image: string,
     // Docker tag

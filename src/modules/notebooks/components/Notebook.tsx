@@ -1,6 +1,6 @@
 import React from "react";
-import { RuntimeConfigurationCell } from "../../runtimes/components/RuntimeConfigurationCell";
-import { RuntimeConfiguration } from "../../runtimes/Types";
+import { ContainerConfigurationsPanel } from "../../containers/components/ContainerConfigurationsPanel";
+import { ContainerConfiguration } from "../../containers/Types";
 
 
 export interface NotebookProps {
@@ -8,20 +8,20 @@ export interface NotebookProps {
     id: string;
     // name of the notebook
     name: string;
-    // Runtime configs
-    runtimeConfigurations: RuntimeConfiguration[];
+    // Container configs
+    containerConfigurations: ContainerConfiguration[];
 }
 
 export const Notebook : React.FC<NotebookProps> = ({
     id,
     name,
-    runtimeConfigurations
+    containerConfigurations
 }) => {
     // Runtime configurations 
     return (
         <div className="unk-notebook">
             {/* Runtime configurations go first */}
-            <RuntimeConfigurationCell/>
+            <ContainerConfigurationsPanel configurations={containerConfigurations}/>
         </div>
     );
 };
