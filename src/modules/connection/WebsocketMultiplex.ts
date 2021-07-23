@@ -27,13 +27,13 @@ class DumbEventTarget {
     };
 }
 
-class Channel extends DumbEventTarget {
+export class MxedChannel extends DumbEventTarget {
     private ws : WebSocket;
     private name: string;
-    private channels: Record<string, Channel>;
+    private channels: Record<string, MxedChannel>;
     private readyState : number;
 
-    constructor(ws: WebSocket, name: string, channels : Record<string, Channel>) {
+    constructor(ws: WebSocket, name: string, channels : Record<string, MxedChannel>) {
         super();
         this.ws = ws;
         this.name = name;
@@ -50,7 +50,6 @@ class Channel extends DumbEventTarget {
         }
     }
     send(data: any) {
-        console.log('sending', data);
         this.ws.send(this.name + '::' + data);
     };
     close() {
@@ -63,35 +62,45 @@ class Channel extends DumbEventTarget {
 
 export class WebSocketMultiplex {
     private ws : WebSocket;
-    private channels: Record<string, Channel>;
+    private channels: Record<string, MxedChannel>;
+    public onopen : (ws: WebSocket, event: any) => void;
 
 
-    constructor(ws: WebSocket) {
+    constructor(ws: WebSocket, onopen?: (ws: WebSocket, event: any) => void) {
         this.ws = ws;
         this.channels = {};
+        this.onopen = onopen ? onopen : () => 1;
+        this.ws.onopen = (event) => {
+            if (this.onopen) {
+                this.onopen(this.ws, event);
+            }
+        };
         this.ws.addEventListener('message', async (e) => {
             // Slice and read channel identifiers until a specific byte sequence is found
             const b: Blob = e.data;
-            let soFar = "";
-            let offset = 0;
             const size = b.size;
-            let channelName;
-            while (offset < size) {
-                soFar += await b.slice(offset, offset + 4).text();
-                channelName = this._parseChannel(soFar);
-                if (channelName) {
-                    break
-                }
-                offset += 4;
-            }
+            let { element: channelName, rest } = await this._parseElement(b);
             if (channelName) {
                 // Send message to channel
                 const ch = this.channels[channelName];
                 if (ch) {
-                    const rest = await b.slice(channelName.length + 2, size).arrayBuffer();
-                    ch.emit('message', {
-                        data: rest
-                    });
+                    if (channelName === 'root') {
+                        let { element: actionType, rest: nextRest } = await this._parseElement(rest);
+                        if (actionType) {
+                            const finalData = await nextRest.text();
+                            ch.emit('message', {
+                                type: actionType,
+                                data: finalData
+                            });
+                        } else {
+                            console.warn('Unknown action-type on root channel');
+                        }
+                    } else {
+                        const finalData = await rest.arrayBuffer();
+                        ch.emit('message', {
+                            data: finalData
+                        });
+                    }
                 }
             } else {
                 console.warn('message received on unknown channel', channelName);
@@ -99,16 +108,37 @@ export class WebSocketMultiplex {
         });
     }
 
-    _parseChannel(s : string) {
-        let i = s.indexOf('::');
-        if (i === -1) {
-            return undefined;
+    async _parseElement(b: Blob, delimter='::') : Promise<{element: string, rest: Blob}> {
+        let soFar = "";
+        let element = "";
+        let offset = 0;
+        let size = b.size;
+        while (offset < size) {
+            soFar += await b.slice(offset, offset + 4).text();
+            let i = soFar.indexOf(delimter);
+            if (i !== -1) {
+                element = soFar.slice(0, i);
+            }
+            if (element) {
+                break
+            }
+            offset += 4;
         }
-        return s.slice(0, i);
+        if (element && element.length) {
+            const rest = await b.slice(element.length + delimter.length, size);
+            return {
+                element,
+                rest
+            };
+        }
+        return {
+            element,
+            rest: b
+        };
     }
 
-    channel(name: string) : Channel {
-        this.channels[name]  = new Channel(this.ws, name, this.channels);
+    channel(name: string) : MxedChannel {
+        this.channels[name]  = new MxedChannel(this.ws, name, this.channels);
         return this.channels[name];
     }
 };

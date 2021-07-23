@@ -3,13 +3,60 @@ import { ContainerConfiguration } from "../Types";
 import './ContainerConfigurationsPanel.css';
 
 export interface ContainerConfigurationsPanelProps {
-    configurations?: ContainerConfiguration[]
+    configurations?: ContainerConfiguration[],
+    onCreateNew: (config: ContainerConfiguration) => void;
+    handleCommandRun: (containerId: string, cmd: string) => void;
 };
 
 export interface NewContainerConfigurationProps {
     onSave: (config: ContainerConfiguration) => void;
     onCancel: () => void;
 }
+
+export interface ContainerConfigurationDetailsProps {
+    config: ContainerConfiguration,
+    onCommandRun: (cmd: string) => void;
+}
+
+const ContainerConfigurationDetails : React.FC<ContainerConfigurationDetailsProps> = ({config, onCommandRun}) => {
+    const commandExecInputId = config.name + "-" + "command-exec";
+    return (
+        <div className="unk-container-configuration-details box">
+            <h5 className="subtitle is-5">{config.name}</h5>
+            <div className="field">
+                <label className="label">
+                    Image
+                </label>
+                <p>{config.image}</p>
+            </div>
+            <div className="field">
+                <label className="label">
+                    Tag
+                </label>
+                <p>{config.tag}</p>
+            </div>
+            <div className="field">
+                <label className="label">
+                    Execute command
+                </label>
+                <div className="control">
+                        <input id={commandExecInputId} className="input" type="text" placeholder="Enter command to run" />
+                    </div>
+                    <button className="button is-small is-ghost" onClick={handleCommandRun}>
+                Run
+            </button>
+            </div>
+        </div>
+    );
+
+    function handleCommandRun() {
+        const inp = document.getElementById(commandExecInputId);
+        if (inp) {
+            let value = (inp as HTMLInputElement).value;
+            onCommandRun(value);
+        }
+    }
+};
 
 const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
     onSave,
@@ -124,7 +171,9 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
 };
 
 export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanelProps> = ({
-    configurations = []
+    configurations = [],
+    onCreateNew,
+    handleCommandRun
 }) => {
     const [active, setActive] = useState("");
     const [addNew, setAddNew] = useState(false);
@@ -151,7 +200,12 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
                 </li>
             </ul>
         </div>
-
-        {addNew && <NewContainerConfiguration onSave={console.log} onCancel={() => setAddNew(false)}/>}
+        {activeConfig && !addNew && <ContainerConfigurationDetails config={activeConfig} onCommandRun={(cmd) => {
+            handleCommandRun(activeConfig.id, cmd);
+        }}/>}
+        {addNew && <NewContainerConfiguration onSave={(config) => {
+            setAddNew(false);
+            onCreateNew(config);
+        }} onCancel={() => setAddNew(false)}/>}
     </section>
 };
