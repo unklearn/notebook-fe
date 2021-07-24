@@ -5,6 +5,7 @@ import './ContainerConfigurationsPanel.css';
 export interface ContainerConfigurationsPanelProps {
     configurations?: ContainerConfiguration[],
     onCreateNew: (config: ContainerConfiguration) => void;
+    handleFileAdd: (containerId: string) => void;
     handleCommandRun: (containerId: string, cmd: string) => void;
 };
 
@@ -15,10 +16,11 @@ export interface NewContainerConfigurationProps {
 
 export interface ContainerConfigurationDetailsProps {
     config: ContainerConfiguration,
+    onFileAdd: () => void;
     onCommandRun: (cmd: string) => void;
 }
 
-const ContainerConfigurationDetails : React.FC<ContainerConfigurationDetailsProps> = ({config, onCommandRun}) => {
+const ContainerConfigurationDetails : React.FC<ContainerConfigurationDetailsProps> = ({config, onFileAdd, onCommandRun}) => {
     const commandExecInputId = config.name + "-" + "command-exec";
     return (
         <div className="unk-container-configuration-details box">
@@ -45,9 +47,16 @@ const ContainerConfigurationDetails : React.FC<ContainerConfigurationDetailsProp
                     <button className="button is-small is-ghost" onClick={handleCommandRun}>
                 Run
             </button>
+            <button className="button is-small is-ghost" onClick={handleFileAdd}>
+                Add file viewer
+            </button>
             </div>
         </div>
     );
+
+    function handleFileAdd() {
+        onFileAdd();
+    }
 
     function handleCommandRun() {
         const inp = document.getElementById(commandExecInputId);
@@ -173,6 +182,7 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
 export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanelProps> = ({
     configurations = [],
     onCreateNew,
+    handleFileAdd,
     handleCommandRun
 }) => {
     const [active, setActive] = useState("");
@@ -200,7 +210,9 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
                 </li>
             </ul>
         </div>
-        {activeConfig && !addNew && <ContainerConfigurationDetails config={activeConfig} onCommandRun={(cmd) => {
+        {activeConfig && !addNew && <ContainerConfigurationDetails config={activeConfig} onFileAdd={() => {
+            handleFileAdd(activeConfig.id);
+        }} onCommandRun={(cmd) => {
             handleCommandRun(activeConfig.id, cmd);
         }}/>}
         {addNew && <NewContainerConfiguration onSave={(config) => {

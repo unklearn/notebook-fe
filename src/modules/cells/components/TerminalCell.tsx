@@ -23,10 +23,12 @@ export const TerminalCell : React.FC<TerminalCellProps> = ({
         }, 500);
     }, [socket]);
     return (
-        <div id={channelId} style={{
+        <div className="box">
+            <div id={channelId} style={{
             width: "100%"
         }}>
 
+        </div>
         </div>
     );
 };

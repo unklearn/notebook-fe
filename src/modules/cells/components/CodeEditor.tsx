@@ -12,7 +12,7 @@ import 'codemirror/mode/css/css';
 import './CodeEditor.css';
 
 export interface CodeEditorProps {
-    mode: "javascript" | "python" | "java" | "json" | "shell" | "golang" | "yaml" | "markdown" | "html" | "css" | "redis",
+    mode: "javascript" | "python" | "java" | "json" | "shell" | "golang" | "yaml" | "markdown" | "html" | "css" | "redis" | "text",
     code: string,
     onSave: (code: string) => void;
 };
@@ -33,7 +33,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
     yaml: 'yaml',
     html: 'text/html',
     css: 'text/css',
-    redis: 'text/plain'
+    text: 'text/plain'
   };
   
 
@@ -51,6 +51,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
         <CodeMirror
           value={code}
           options={{
+            // @ts-expect-error
             mode: CodeEditor.langModeToCodeMirrorMode[mode],
             indentUnit: 4,
             viewportMargin: 150,

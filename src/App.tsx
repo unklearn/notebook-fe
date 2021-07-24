@@ -20,7 +20,7 @@ function App() {
     <div className="App container">
       <AppNavBar/>
       <div id="terminal"></div>
-      <Notebook id="dummy" name="Dummy" containerConfigurations={[]} socket={mxws}/>
+      {mxws && <Notebook id="dummy" name="Dummy" containerConfigurations={[]} socket={mxws}/>}
     </div>
   );
 }
