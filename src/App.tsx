@@ -5,8 +5,6 @@ import 'xterm/css/xterm.css';
 import { Notebook } from './modules/notebooks/components/Notebook';
 import { AppNavBar } from './modules/shared/components/AppNavBar';
 import { WebSocketMultiplex } from './modules/connection/WebsocketMultiplex';
-import { Terminal } from 'xterm';
-import { AttachAddon } from 'xterm-addon-attach';
 
 function App() {
   const [mxws, setMxWs] = useState<WebSocketMultiplex | undefined>(undefined);
@@ -20,7 +18,7 @@ function App() {
     <div className="App container">
       <AppNavBar/>
       <div id="terminal"></div>
-      {mxws && <Notebook id="dummy" name="Dummy" containerConfigurations={[]} socket={mxws}/>}
+      <Notebook id="dummy" name="Dummy" containerConfigurations={[]} socket={mxws}/>
     </div>
   );
 }

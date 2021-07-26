@@ -6,6 +6,7 @@ export interface ContainerConfigurationsPanelProps {
     configurations?: ContainerConfiguration[],
     onCreateNew: (config: ContainerConfiguration) => void;
     handleFileAdd: (containerId: string) => void;
+    handleDocAdd: () => void;
     handleCommandRun: (containerId: string, cmd: string) => void;
 };
 
@@ -17,11 +18,12 @@ export interface NewContainerConfigurationProps {
 export interface ContainerConfigurationDetailsProps {
     config: ContainerConfiguration,
     onFileAdd: () => void;
+    onDocAdd: () => void;
     onCommandRun: (cmd: string) => void;
 }
 
-const ContainerConfigurationDetails : React.FC<ContainerConfigurationDetailsProps> = ({config, onFileAdd, onCommandRun}) => {
-    const commandExecInputId = config.name + "-" + "command-exec";
+const ContainerConfigurationDetails: React.FC<ContainerConfigurationDetailsProps> = ({ config, onFileAdd, onDocAdd, onCommandRun }) => {
+    const commandExecInputId = config.name + "-command-exec";
     return (
         <div className="unk-container-configuration-details box">
             <h5 className="subtitle is-5">{config.name}</h5>
@@ -42,15 +44,24 @@ const ContainerConfigurationDetails : React.FC<ContainerConfigurationDetailsProp
                     Execute command
                 </label>
                 <div className="control">
-                        <input id={commandExecInputId} className="input" type="text" placeholder="Enter command to run" />
-                    </div>
-                    <button className="button is-small is-ghost" onClick={handleCommandRun}>
-                Run
-            </button>
-            <button className="button is-small is-ghost" onClick={handleFileAdd}>
-                Add file viewer
-            </button>
+                    <input id={commandExecInputId} className="input" type="text" placeholder="Enter command to run" />
+                </div>
+                <button className="button is-small is-info" onClick={handleCommandRun}>
+                    Run
+                </button>
             </div>
+            <div className="field">
+                <label className="label">
+                    Actions
+                </label>
+                <button className="button is-small is-primary" onClick={handleFileAdd}>
+                    Add file viewer
+                </button>
+                <button className="button is-small is-warning" onClick={onDocAdd}>
+                    Add documentation
+                </button>
+            </div>
+
         </div>
     );
 
@@ -77,9 +88,11 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
         image: "",
         tag: "latest",
         envVars: {},
+        ports: "",
+        startCommand: 'sleep infinity',
         status: "pending"
     });
-    const [env, setEnv] = useState<{key: string, value: string}[]>([]);
+    const [env, setEnv] = useState<{ key: string, value: string }[]>([]);
     return (
         <div className="unk-container-configuration-details box">
             <h5 className="subtitle is-5">Enter new container configuration</h5>
@@ -106,6 +119,21 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
                 </div>
 
                 <div className="field">
+                    <label className="label">Start command</label>
+                    <div className="control">
+                        <input className="input" type="text" value={config.startCommand} onChange={(e) => setConfig({ ...config, startCommand: e.target.value })} placeholder="Enter container start command" />
+                    </div>
+                </div>
+
+                <div className="field">
+                    <label className="label">Ports</label>
+                    <div className="control">
+                        <input className="input" type="text" value={config.ports} onChange={(e) => setConfig({ ...config, ports: e.target.value })} placeholder="Enter ports to be exposed separated by whitespace" />
+                    </div>
+                </div>
+
+
+                <div className="field">
                     <label className="label">Environment variables</label>
 
                     <div className="control">
@@ -117,7 +145,7 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
                                 </tr>
                             </thead>
                             <tbody>
-                                {env.map((entry: {key: string, value: string}, i: number) => {
+                                {env.map((entry: { key: string, value: string }, i: number) => {
                                     return (
                                         <tr key={i}>
                                             <td><input type="text" value={entry.key} onChange={(e) => {
@@ -149,7 +177,7 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
             </form>
         </div>
     );
-    function _modifyEnvVar(t: "key" | "value", index : number, value: string) {
+    function _modifyEnvVar(t: "key" | "value", index: number, value: string) {
         env[index][t] = value;
         setEnv(env.slice());
     }
@@ -163,7 +191,7 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
     function _handleSubmit(e: any) {
         e.preventDefault();
         // Validate data is necessary
-        let envVars : Record<string, string> = {};
+        let envVars: Record<string, string> = {};
         env.forEach((e) => envVars[e.key] = e.value);
         onSave({
             ...config,
@@ -175,7 +203,7 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
     function _addEnvVar() {
         const keyLen = Object.keys(config.envVars).length;
         config.envVars["key-" + keyLen] = "";
-        setEnv([...env, {key: "key-" + keyLen, value:  ""}])
+        setEnv([...env, { key: "key-" + keyLen, value: "" }])
     }
 };
 
@@ -183,6 +211,7 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
     configurations = [],
     onCreateNew,
     handleFileAdd,
+    handleDocAdd,
     handleCommandRun
 }) => {
     const [active, setActive] = useState("");
@@ -202,7 +231,7 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
         </div>
         <div className="tabs is-small is-toggle">
             <ul>
-                {configurations.map((c) => <li key={c.name} className={active === c.name ? "is-active" : undefined} onClick={() => setActive(c.name)}>
+                {configurations.map((c) => <li key={c.name} className={active === c.name ? "is-active" : undefined} onClick={() => active === c.name ? setActive('') : setActive(c.name)}>
                     <a>{c.name}</a>
                 </li>)}
                 <li>
@@ -214,10 +243,10 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
             handleFileAdd(activeConfig.id);
         }} onCommandRun={(cmd) => {
             handleCommandRun(activeConfig.id, cmd);
-        }}/>}
+        }} onDocAdd={handleDocAdd}/>}
         {addNew && <NewContainerConfiguration onSave={(config) => {
             setAddNew(false);
             onCreateNew(config);
-        }} onCancel={() => setAddNew(false)}/>}
+        }} onCancel={() => setAddNew(false)} />}
     </section>
 };

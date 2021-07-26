@@ -78,7 +78,6 @@ export class WebSocketMultiplex {
         this.ws.addEventListener('message', async (e) => {
             // Slice and read channel identifiers until a specific byte sequence is found
             const b: Blob = e.data;
-            const size = b.size;
             let { element: channelName, rest } = await this._parseElement(b);
             if (channelName) {
                 // Send message to channel
@@ -138,6 +137,7 @@ export class WebSocketMultiplex {
     }
 
     channel(name: string) : MxedChannel {
+        console.log("Adding channel", name);
         this.channels[name]  = new MxedChannel(this.ws, name, this.channels);
         return this.channels[name];
     }

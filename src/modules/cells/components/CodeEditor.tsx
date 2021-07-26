@@ -1,5 +1,5 @@
 import React from 'react';
-import { UnControlled as CodeMirror, UnControlled } from 'react-codemirror2';
+import { UnControlled as CodeMirror } from 'react-codemirror2';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/python/python';
@@ -40,9 +40,7 @@ export class CodeEditor extends React.Component<CodeEditorProps, CodeEditorState
   // *********************************************************
   // Constructor
   // *********************************************************
-  constructor (props : CodeEditorProps) {
-    super(props);
-  }
+
 
   render () {
     const { mode, code, onSave } = this.props;

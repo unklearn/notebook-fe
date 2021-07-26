@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import { string } from 'yargs';
 import { CodeEditor } from './CodeEditor';
 
 export interface FileCellProps {
@@ -7,6 +6,7 @@ export interface FileCellProps {
     filePath: string;
     fileContents?: string;
     onPathChange: (containerId: string, filePath: string) => void;
+    onContentChange: (containerId: string, filePath: string, fileContents: string) => void;
 };
 
 const extToMode = {
@@ -17,6 +17,7 @@ export const FileCell : React.FC<FileCellProps> = ({
     containerId,
     filePath,
     onPathChange,
+    onContentChange,
     fileContents
 }) => {
     const inputRef = useRef<HTMLInputElement>(null);
@@ -26,10 +27,16 @@ export const FileCell : React.FC<FileCellProps> = ({
             {fileContents && <CodeEditor
                 code={fileContents}
                 mode={getMode()}
-                onSave={console.log}
+                onSave={updateContent}
             />}
         </div>
     </div>
+
+    function updateContent(code: string) {
+        if (inputRef.current) {
+            onContentChange(containerId, inputRef.current.value, code);
+        }
+    }
 
     function getMode() {
         if (inputRef && inputRef.current) {
