@@ -30,6 +30,7 @@ class DumbEventTarget {
 export class MxedChannel extends DumbEventTarget {
     private ws : WebSocket;
     private name: string;
+    private nameBuf: Uint8Array;
     private channels: Record<string, MxedChannel>;
     private readyState : number;
 
@@ -37,6 +38,7 @@ export class MxedChannel extends DumbEventTarget {
         super();
         this.ws = ws;
         this.name = name;
+        this.nameBuf = new TextEncoder().encode(name);
         this.channels = channels;
         this.readyState = 1;
 
@@ -49,8 +51,41 @@ export class MxedChannel extends DumbEventTarget {
             this.ws.addEventListener('open', onopen);
         }
     }
-    send(data: any) {
-        this.ws.send(this.name + '::' + data);
+    send(eventName:string, data: any) {
+        function str2ab(str: string) : ArrayBuffer {
+            var buf = new ArrayBuffer(str.length);
+            var bufView = new Uint8Array(buf);
+            for (var i=0, strLen=str.length; i<strLen; i++) {
+              bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+          }
+        function strtouint8(bufferString: string) : Uint8Array {
+            return new TextEncoder().encode(bufferString);
+        }
+        // Create arraybuffer
+        if (data instanceof Blob) {
+            data = data.arrayBuffer()
+        } else if (typeof data === "string") {
+            data = str2ab(data);
+        } else if (!(data instanceof ArrayBuffer)) {
+            throw new Error('Data must be one of string, Blob or ArrayBuffer');
+        }
+        //debugger
+        // Create unsigned 32 view
+        const lengthBuf = new Uint32Array(2);
+        lengthBuf[0] = this.name.length;
+        lengthBuf[1] = eventName.length;
+        const nameBuf = new Uint8Array(this.name.length + eventName.length);
+        nameBuf.set(this.nameBuf, 0);
+        nameBuf.set(strtouint8(eventName), this.nameBuf.byteLength);
+        
+        // Now we add remaining data as U8array with offset
+        const finalBuf = new Uint8Array(lengthBuf.byteLength + nameBuf.byteLength + data.byteLength);
+        finalBuf.set(new Uint8Array(lengthBuf.buffer), 0);
+        finalBuf.set(nameBuf, lengthBuf.byteLength);
+        finalBuf.set(new Uint8Array(data), lengthBuf.byteLength + nameBuf.byteLength);
+        this.ws.send(finalBuf);
     };
     close() {
         this.ws.send('uns,' + this.name);

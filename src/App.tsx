@@ -7,9 +7,10 @@ import { AppNavBar } from './modules/shared/components/AppNavBar';
 import { WebSocketMultiplex } from './modules/connection/WebsocketMultiplex';
 
 function App() {
+  const id = 'xt4wxc';
   const [mxws, setMxWs] = useState<WebSocketMultiplex | undefined>(undefined);
   useEffect(() => {
-    const ws =  new WebSocket("ws://localhost:8080/websocket");
+    const ws =  new WebSocket(`ws://localhost:8080/websocket/${id}`);
     const mxws = new WebSocketMultiplex(ws, () => {
       setMxWs(mxws);
     });
@@ -18,7 +19,7 @@ function App() {
     <div className="App container">
       <AppNavBar/>
       <div id="terminal"></div>
-      <Notebook id="dummy" name="Dummy" containerConfigurations={[]} socket={mxws}/>
+      <Notebook id={id} name="Dummy" containerConfigurations={[]} socket={mxws}/>
     </div>
   );
 }

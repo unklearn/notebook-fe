@@ -43,7 +43,7 @@ export class Notebook extends React.Component<NotebookProps, NotebookState> {
 
     setupRootChannel(socket?: WebSocketMultiplex) {
         if (socket) {
-            const rootCh = socket.channel('root');
+            const rootCh = socket.channel(this.props.id);
             this.addRootChannelHandlers(rootCh);
             return rootCh;
         }
@@ -55,7 +55,7 @@ export class Notebook extends React.Component<NotebookProps, NotebookState> {
             if (rootCh) {
                 this.setState({
                     channelMap: {
-                        'root': rootCh
+                        [this.props.id]: rootCh
                     }
                 })
             }
@@ -107,15 +107,17 @@ export class Notebook extends React.Component<NotebookProps, NotebookState> {
             configs: this.state.configs.concat([config])
         })
         // Advertise via root socket
-        const rootChannel = this.state.channelMap['root'];
+        const rootChannel = this.state.channelMap[this.props.id];
         if (rootChannel) {
-            rootChannel.send(JSON.stringify({
-                Image: config.image,
-                Tag: config.tag,
-                Action: "start",
-                Ports: config.ports.split(' '),
-                Command: config.startCommand.split(' '),
-                Env: Object.keys(config.envVars).map((k) => k + '=' + config.envVars[k])
+            rootChannel.send("container:start", JSON.stringify({
+                image: config.image,
+                tag: config.tag,
+                network_options: {
+                    ports: config.ports.split(' ')
+                },
+                name: config.name,
+                command: config.startCommand.split(' '),
+                env: Object.keys(config.envVars).map((k) => k + '=' + config.envVars[k])
             }))
         }
     }
@@ -174,7 +176,7 @@ export class Notebook extends React.Component<NotebookProps, NotebookState> {
     handleCommandRun = (containerId: string, cmd: string) => {
         const ch = this.state.channelMap[containerId];
         if (ch) {
-            ch.send(JSON.stringify({
+            ch.send("execute:command", JSON.stringify({
                 Action: "exec-terminal",
                 Command: cmd.split(' ')
             }))
@@ -199,7 +201,7 @@ export class Notebook extends React.Component<NotebookProps, NotebookState> {
         const { channelMap } = this.state;
         const ch = channelMap[containerId];
         if (ch) {
-            ch.send(JSON.stringify({
+            ch.send("file:sync", JSON.stringify({
                 Action: "sync-file",
                 Path: fileName,
                 Contents: fileContents
