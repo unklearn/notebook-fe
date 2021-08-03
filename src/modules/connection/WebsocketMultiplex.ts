@@ -1,3 +1,5 @@
+import { getEffectiveConstraintOfTypeParameter } from "typescript";
+
 // From https://github.com/sockjs/websocket-multiplex/blob/master/multiplex_client.js
 class DumbEventTarget {
     private listeners: Record<string, Function[]>;
@@ -113,32 +115,50 @@ export class WebSocketMultiplex {
         this.ws.addEventListener('message', async (e) => {
             // Slice and read channel identifiers until a specific byte sequence is found
             const b: Blob = e.data;
-            let { element: channelName, rest } = await this._parseElement(b);
-            if (channelName) {
-                // Send message to channel
-                const ch = this.channels[channelName];
-                if (ch) {
-                    if (channelName === 'root') {
-                        let { element: actionType, rest: nextRest } = await this._parseElement(rest);
-                        if (actionType) {
-                            const finalData = await nextRest.text();
-                            ch.emit('message', {
-                                type: actionType,
-                                data: finalData
-                            });
-                        } else {
-                            console.warn('Unknown action-type on root channel');
-                        }
-                    } else {
-                        const finalData = await rest.arrayBuffer();
-                        ch.emit('message', {
-                            data: finalData
-                        });
-                    }
-                }
+            // Covert to buffer
+            const buf = await b.arrayBuffer();
+            // Parse 4 first bytes as littleEndian
+            const channelNameLength = new DataView(buf, 0, 4).getUint32(0, true);
+            const eventNameLength = new DataView(buf, 4, 8).getUint32(0, true);
+            // Parse channelName and eventName
+            const channelName = new TextDecoder().decode(buf.slice(8, 8 + channelNameLength));
+            const eventName = new TextDecoder().decode(buf.slice(8 + channelNameLength, 8 + channelNameLength + eventNameLength));
+            
+            const channel = this.channels[channelName];
+            if (!channel) {
+                console.warn("Message dispatched to unknown channel", channelName);
             } else {
-                console.warn('message received on unknown channel', channelName);
+                channel.emit('message', {
+                    type: eventName,
+                    data: buf.slice(8 + channelNameLength + eventNameLength)
+                });
             }
+            // let { element: channelName, rest } = await this._parseElement(b);
+            // if (channelName) {
+            //     // Send message to channel
+            //     const ch = this.channels[channelName];
+            //     if (ch) {
+            //         if (channelName === 'root') {
+            //             let { element: actionType, rest: nextRest } = await this._parseElement(rest);
+            //             if (actionType) {
+            //                 const finalData = await nextRest.text();
+            //                 ch.emit('message', {
+            //                     type: actionType,
+            //                     data: finalData
+            //                 });
+            //             } else {
+            //                 console.warn('Unknown action-type on root channel');
+            //             }
+            //         } else {
+            //             const finalData = await rest.arrayBuffer();
+            //             ch.emit('message', {
+            //                 data: finalData
+            //             });
+            //         }
+            //     }
+            // } else {
+            //     console.warn('message received on unknown channel', channelName);
+            // }
         });
     }
 

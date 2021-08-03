@@ -123,17 +123,21 @@ export class Notebook extends React.Component<NotebookProps, NotebookState> {
     }
 
     addRootChannelHandlers = (root: MxedChannel) => {
-        root.addEventListener('message', (payload: { type: string, data: string }) => {
+        root.addEventListener('message', (payload: { type: string, data: ArrayBuffer }) => {
             const { channelMap, configs, cells } = this.state;
             const { socket } = this.props;
             switch (payload.type) {
-                case "container-started":
+                case "container:status":
                     // Add a new channel
-                    const ch = (socket as WebSocketMultiplex).channel(payload.data);
-                    channelMap[payload.data] = ch;
+                    // Parse data
+                    const decoded = new TextDecoder().decode(payload.data);
+                    const parsed = JSON.parse(decoded);
+                    const ch = (socket as WebSocketMultiplex).channel(parsed.id);
+                    channelMap[parsed.id] = ch;
                     // Less than ideal, but we can use this for now:
                     const lastConfig = configs[configs.length - 1];
-                    lastConfig.id = payload.data;
+                    lastConfig.id = parsed.id;
+                    console.log(decoded, parsed)
                     this.setState({
                         configs,
                         channelMap
@@ -141,12 +145,12 @@ export class Notebook extends React.Component<NotebookProps, NotebookState> {
                     break;
                 case 'terminal-started':
                     // Add a new channel
-                    const commandCh = (socket as WebSocketMultiplex).channel(payload.data);
-                    channelMap[payload.data] = commandCh;
-                    this.setState({
-                        channelMap,
-                        cells: cells.concat([<TerminalCell key={payload.data} channelId={payload.data} socket={commandCh} />])
-                    })
+                    // const commandCh = (socket as WebSocketMultiplex).channel(payload.data);
+                    // channelMap[payload.data] = commandCh;
+                    // this.setState({
+                    //     channelMap,
+                    //     cells: cells.concat([<TerminalCell key={payload.data} channelId={payload.data} socket={commandCh} />])
+                    // })
                     // add a new xterm and publish to channel
                     break;
                 case 'file-contents':
