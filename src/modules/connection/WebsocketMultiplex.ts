@@ -1,4 +1,7 @@
-import { getEffectiveConstraintOfTypeParameter } from "typescript";
+import { DemuxedPayload } from "./Types";
+
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
 // From https://github.com/sockjs/websocket-multiplex/blob/master/multiplex_client.js
 class DumbEventTarget {
@@ -8,7 +11,7 @@ class DumbEventTarget {
     }
 
     _ensure(type: string) {
-        if(!(type in this.listeners)) this.listeners[type] = [];
+        if (!(type in this.listeners)) this.listeners[type] = [];
     }
 
     addEventListener(type: string, listener: Function) {
@@ -23,84 +26,55 @@ class DumbEventTarget {
             // @ts-expect-error
             this['on' + type].apply(this, args);
         }
-        for(var i=0; i < this.listeners[type].length; i++) {
+        for (var i = 0; i < this.listeners[type].length; i++) {
             this.listeners[type][i].apply(this, args);
         }
     };
 }
 
 export class MxedChannel extends DumbEventTarget {
-    private ws : WebSocket;
+    private ws: WebSocket;
     private name: string;
     private nameBuf: Uint8Array;
     private channels: Record<string, MxedChannel>;
-    private readyState : number;
+    // private readyState : number;
 
-    constructor(ws: WebSocket, name: string, channels : Record<string, MxedChannel>) {
+    get readyState() {
+        return this.ws.readyState;
+    }
+
+    constructor(ws: WebSocket, name: string, channels: Record<string, MxedChannel>) {
         super();
         this.ws = ws;
         this.name = name;
         this.nameBuf = new TextEncoder().encode(name);
         this.channels = channels;
-        this.readyState = 1;
 
         var onopen = () => {
             this.emit('open');
         };
-        if(ws.readyState > 0) {
+        if (ws.readyState > 0) {
             setTimeout(onopen, 0);
         } else {
             this.ws.addEventListener('open', onopen);
         }
     }
-    send(eventName:string, data: any) {
-        function str2ab(str: string) : ArrayBuffer {
-            var buf = new ArrayBuffer(str.length);
-            var bufView = new Uint8Array(buf);
-            for (var i=0, strLen=str.length; i<strLen; i++) {
-              bufView[i] = str.charCodeAt(i);
-            }
-            return buf;
-          }
-        function strtouint8(bufferString: string) : Uint8Array {
-            return new TextEncoder().encode(bufferString);
-        }
-        // Create arraybuffer
-        if (data instanceof Blob) {
-            data = data.arrayBuffer()
-        } else if (typeof data === "string") {
-            data = str2ab(data);
-        } else if (!(data instanceof ArrayBuffer)) {
-            throw new Error('Data must be one of string, Blob or ArrayBuffer');
-        }
-        //debugger
-        // Create unsigned 32 view
-        const lengthBuf = new Uint32Array(2);
-        lengthBuf[0] = this.name.length;
-        lengthBuf[1] = eventName.length;
-        const nameBuf = new Uint8Array(this.name.length + eventName.length);
-        nameBuf.set(this.nameBuf, 0);
-        nameBuf.set(strtouint8(eventName), this.nameBuf.byteLength);
+    send(eventName: string, data: any) {
         
-        // Now we add remaining data as U8array with offset
-        const finalBuf = new Uint8Array(lengthBuf.byteLength + nameBuf.byteLength + data.byteLength);
-        finalBuf.set(new Uint8Array(lengthBuf.buffer), 0);
-        finalBuf.set(nameBuf, lengthBuf.byteLength);
-        finalBuf.set(new Uint8Array(data), lengthBuf.byteLength + nameBuf.byteLength);
         this.ws.send(finalBuf);
     };
     close() {
         this.ws.send('uns,' + this.name);
         delete this.channels[this.name];
-        setTimeout(() => {this.emit('close', {});},0);
+        setTimeout(() => { this.emit('close', {}); }, 0);
     };
 
 }
 
 export class WebSocketMultiplex {
-    private ws : WebSocket;
+    private ws: WebSocket;
     private channels: Record<string, MxedChannel>;
-    public onopen : (ws: WebSocket, event: any) => void;
+    public onopen: (ws: WebSocket, event: any) => void;
 
 
     constructor(ws: WebSocket, onopen?: (ws: WebSocket, event: any) => void) {
@@ -114,86 +88,68 @@ export class WebSocketMultiplex {
         };
         this.ws.addEventListener('message', async (e) => {
             // Slice and read channel identifiers until a specific byte sequence is found
-            const b: Blob = e.data;
-            // Covert to buffer
-            const buf = await b.arrayBuffer();
-            // Parse 4 first bytes as littleEndian
-            const channelNameLength = new DataView(buf, 0, 4).getUint32(0, true);
-            const eventNameLength = new DataView(buf, 4, 8).getUint32(0, true);
-            // Parse channelName and eventName
-            const channelName = new TextDecoder().decode(buf.slice(8, 8 + channelNameLength));
-            const eventName = new TextDecoder().decode(buf.slice(8 + channelNameLength, 8 + channelNameLength + eventNameLength));
-            
-            const channel = this.channels[channelName];
-            if (!channel) {
-                console.warn("Message dispatched to unknown channel", channelName);
-            } else {
-                channel.emit('message', {
-                    type: eventName,
-                    data: buf.slice(8 + channelNameLength + eventNameLength)
-                });
-            }
-            // let { element: channelName, rest } = await this._parseElement(b);
-            // if (channelName) {
-            //     // Send message to channel
-            //     const ch = this.channels[channelName];
-            //     if (ch) {
-            //         if (channelName === 'root') {
-            //             let { element: actionType, rest: nextRest } = await this._parseElement(rest);
-            //             if (actionType) {
-            //                 const finalData = await nextRest.text();
-            //                 ch.emit('message', {
-            //                     type: actionType,
-            //                     data: finalData
-            //                 });
-            //             } else {
-            //                 console.warn('Unknown action-type on root channel');
-            //             }
-            //         } else {
-            //             const finalData = await rest.arrayBuffer();
-            //             ch.emit('message', {
-            //                 data: finalData
-            //             });
-            //         }
-            //     }
-            // } else {
-            //     console.warn('message received on unknown channel', channelName);
-            // }
+
         });
     }
 
-    async _parseElement(b: Blob, delimter='::') : Promise<{element: string, rest: Blob}> {
-        let soFar = "";
-        let element = "";
-        let offset = 0;
-        let size = b.size;
-        while (offset < size) {
-            soFar += await b.slice(offset, offset + 4).text();
-            let i = soFar.indexOf(delimter);
-            if (i !== -1) {
-                element = soFar.slice(0, i);
-            }
-            if (element) {
-                break
-            }
-            offset += 4;
-        }
-        if (element && element.length) {
-            const rest = await b.slice(element.length + delimter.length, size);
-            return {
-                element,
-                rest
-            };
-        }
-        return {
-            element,
-            rest: b
-        };
-    }
-
-    channel(name: string) : MxedChannel {
+    channel(name: string): MxedChannel {
         console.log("Adding channel", name);
-        this.channels[name]  = new MxedChannel(this.ws, name, this.channels);
+        this.channels[name] = new MxedChannel(this.ws, name, this.channels);
         return this.channels[name];
     }
 };
+
+/**
+ * Socket demuxer is a function that satisfies type: WebsocketMultiplexDecoder
+ * @param buffer ArrayBuffer the buffer to demux
+ * @returns DemuxedPayload containing data
+ */
+export function socketDemuxer(buffer: ArrayBuffer): DemuxedPayload {
+    // Parse 4 first bytes as littleEndian
+    const bufferLen = buffer.byteLength;
+    const channelIdLength = Math.min(Math.min(new DataView(buffer, 0, 4).getUint32(0, true),  256), bufferLen);
+    const eventNameLength = Math.min(Math.min(new DataView(buffer, 4, 8).getUint32(0, true), 256), bufferLen);
+    // Parse channelId and eventName
+    const channelId = new TextDecoder().decode(buffer.slice(8, 8 + channelIdLength));
+    const eventName = new TextDecoder().decode(buffer.slice(8 + channelIdLength, 8 + channelIdLength + eventNameLength));
+
+    return {
+        channelId,
+        eventName,
+        data: buffer.slice(8 + channelIdLength + eventNameLength)
+    };
+}
+
+export function socketMuxer(channelId: string, eventName: string, data: string | ArrayBuffer | ArrayBufferLike) : Uint8Array {
+    // // function str2ab(str: string): ArrayBuffer {
+    // //     var buf = new ArrayBuffer(str.length);
+    // //     var bufView = new Uint8Array(buf);
+    // //     for (var i = 0, strLen = str.length; i < strLen; i++) {
+    // //         bufView[i] = str.charCodeAt(i);
+    // //     }
+    // //     return buf;
+    // // }
+    // function strtouint8(bufferString: string): Uint8Array {
+    //     return new TextEncoder().encode(bufferString);
+    // }
+    // Create arraybuffer
+    if (typeof data === "string") {
+        data = encoder.encode(data).buffer;
+    }
+    //debugger
+    // Create unsigned 32 view
+    const lengthBuf = new Uint32Array(2);
+    lengthBuf[0] = channelId.length;
+    lengthBuf[1] = eventName.length;
+    const nameBuf = new Uint8Array(channelId.length + eventName.length);
+    const channelIdBuf = encoder.encode(channelId);
+    nameBuf.set(channelIdBuf, 0);
+    nameBuf.set(encoder.encode(eventName), channelIdBuf.byteLength);
+
+    // Now we add remaining data as U8array with offset
+    const finalBuf = new Uint8Array(lengthBuf.byteLength + nameBuf.byteLength + data.byteLength);
+    finalBuf.set(new Uint8Array(lengthBuf.buffer), 0);
+    finalBuf.set(nameBuf, lengthBuf.byteLength);
+    finalBuf.set(new Uint8Array(data), lengthBuf.byteLength + nameBuf.byteLength);
+    return finalBuf;
+}
