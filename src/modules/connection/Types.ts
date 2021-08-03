@@ -8,4 +8,4 @@ export interface DemuxedPayload {
  * A decoder function takes a multiplexed websocket data stream and returns
  * channelId, eventName and data
  */
-export type WebsocketMultiplexDecoder = (data: Blob) => DemuxedPayload;
+export type WebsocketMultiplexDecoder = (data: ArrayBuffer) => DemuxedPayload;

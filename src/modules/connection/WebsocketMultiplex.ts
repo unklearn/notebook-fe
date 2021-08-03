@@ -1,103 +1,97 @@
 import { DemuxedPayload } from "./Types";
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
 // From https://github.com/sockjs/websocket-multiplex/blob/master/multiplex_client.js
-class DumbEventTarget {
-    private listeners: Record<string, Function[]>;
-    constructor() {
-        this.listeners = {};
-    }
+// class DumbEventTarget {
+//     private listeners: Record<string, Function[]>;
+//     constructor() {
+//         this.listeners = {};
+//     }
 
-    _ensure(type: string) {
-        if (!(type in this.listeners)) this.listeners[type] = [];
-    }
+//     _ensure(type: string) {
+//         if (!(type in this.listeners)) this.listeners[type] = [];
+//     }
 
-    addEventListener(type: string, listener: Function) {
-        this._ensure(type);
-        this.listeners[type].push(listener);
-    };
-    emit(type: string, ...args: any[]) {
-        this._ensure(type);
-        // Sometimes users can use ws.onopen = ...
-        // @ts-expect-error
-        if (this['on' + type]) {
-            // @ts-expect-error
-            this['on' + type].apply(this, args);
-        }
-        for (var i = 0; i < this.listeners[type].length; i++) {
-            this.listeners[type][i].apply(this, args);
-        }
-    };
-}
+//     addEventListener(type: string, listener: Function) {
+//         this._ensure(type);
+//         this.listeners[type].push(listener);
+//     };
+//     emit(type: string, ...args: any[]) {
+//         this._ensure(type);
+//         // Sometimes users can use ws.onopen = ...
+//         // @ts-expect-error
+//         if (this['on' + type]) {
+//             // @ts-expect-error
+//             this['on' + type].apply(this, args);
+//         }
+//         for (var i = 0; i < this.listeners[type].length; i++) {
+//             this.listeners[type][i].apply(this, args);
+//         }
+//     };
+// }
 
-export class MxedChannel extends DumbEventTarget {
-    private ws: WebSocket;
-    private name: string;
-    private nameBuf: Uint8Array;
-    private channels: Record<string, MxedChannel>;
-    // private readyState : number;
+// export class MxedChannel extends DumbEventTarget {
+//     private ws: WebSocket;
+//     private name: string;
+//     private nameBuf: Uint8Array;
+//     private channels: Record<string, MxedChannel>;
+//     // private readyState : number;
 
-    get readyState() {
-        return this.ws.readyState;
-    }
+//     get readyState() {
+//         return this.ws.readyState;
+//     }
 
-    constructor(ws: WebSocket, name: string, channels: Record<string, MxedChannel>) {
-        super();
-        this.ws = ws;
-        this.name = name;
-        this.nameBuf = new TextEncoder().encode(name);
-        this.channels = channels;
+//     constructor(ws: WebSocket, name: string, channels: Record<string, MxedChannel>) {
+//         super();
+//         this.ws = ws;
+//         this.name = name;
+//         this.nameBuf = new TextEncoder().encode(name);
+//         this.channels = channels;
 
-        var onopen = () => {
-            this.emit('open');
-        };
-        if (ws.readyState > 0) {
-            setTimeout(onopen, 0);
-        } else {
-            this.ws.addEventListener('open', onopen);
-        }
-    }
-    send(eventName: string, data: any) {
+//         var onopen = () => {
+//             this.emit('open');
+//         };
+//         if (ws.readyState > 0) {
+//             setTimeout(onopen, 0);
+//         } else {
+//             this.ws.addEventListener('open', onopen);
+//         }
+//     }
+//     send(eventName: string, data: any) {
         
-        this.ws.send(finalBuf);
-    };
-    close() {
-        this.ws.send('uns,' + this.name);
-        delete this.channels[this.name];
-        setTimeout(() => { this.emit('close', {}); }, 0);
-    };
+//         this.ws.send(finalBuf);
+//     };
+//     close() {
+//         this.ws.send('uns,' + this.name);
+//         delete this.channels[this.name];
+//         setTimeout(() => { this.emit('close', {}); }, 0);
+//     };
 
-}
+// }
 
-export class WebSocketMultiplex {
-    private ws: WebSocket;
-    private channels: Record<string, MxedChannel>;
-    public onopen: (ws: WebSocket, event: any) => void;
+// export class WebSocketMultiplex {
+//     private ws: WebSocket;
+//     private channels: Record<string, MxedChannel>;
+//     public onopen: (ws: WebSocket, event: any) => void;
 
 
-    constructor(ws: WebSocket, onopen?: (ws: WebSocket, event: any) => void) {
-        this.ws = ws;
-        this.channels = {};
-        this.onopen = onopen ? onopen : () => 1;
-        this.ws.onopen = (event) => {
-            if (this.onopen) {
-                this.onopen(this.ws, event);
-            }
-        };
-        this.ws.addEventListener('message', async (e) => {
-            // Slice and read channel identifiers until a specific byte sequence is found
+//     constructor(ws: WebSocket, onopen?: (ws: WebSocket, event: any) => void) {
+//         this.ws = ws;
+//         this.channels = {};
+//         this.onopen = onopen ? onopen : () => 1;
+//         this.ws.onopen = (event) => {
+//             if (this.onopen) {
+//                 this.onopen(this.ws, event);
+//             }
+//         };
+//     }
 
-        });
-    }
-
-    channel(name: string): MxedChannel {
-        console.log("Adding channel", name);
-        this.channels[name] = new MxedChannel(this.ws, name, this.channels);
-        return this.channels[name];
-    }
-};
+//     channel(name: string): MxedChannel {
+//         this.channels[name] = new MxedChannel(this.ws, name, this.channels);
+//         return this.channels[name];
+//     }
+// };
 
 /**
  * Socket demuxer is a function that satisfies type: WebsocketMultiplexDecoder
@@ -121,17 +115,6 @@ export function socketDemuxer(buffer: ArrayBuffer): DemuxedPayload {
 }
 
 export function socketMuxer(channelId: string, eventName: string, data: string | ArrayBuffer | ArrayBufferLike) : Uint8Array {
-    // // function str2ab(str: string): ArrayBuffer {
-    // //     var buf = new ArrayBuffer(str.length);
-    // //     var bufView = new Uint8Array(buf);
-    // //     for (var i = 0, strLen = str.length; i < strLen; i++) {
-    // //         bufView[i] = str.charCodeAt(i);
-    // //     }
-    // //     return buf;
-    // // }
-    // function strtouint8(bufferString: string): Uint8Array {
-    //     return new TextEncoder().encode(bufferString);
-    // }
     // Create arraybuffer
     if (typeof data === "string") {
         data = encoder.encode(data).buffer;

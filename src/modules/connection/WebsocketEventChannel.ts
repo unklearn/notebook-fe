@@ -1,5 +1,6 @@
 import { eventChannel, END } from 'redux-saga';
-import { MxedChannel } from './WebsocketMultiplex';
+import { WebsocketMultiplexDecoder } from './Types';
+import { WEBSOCKET_ON_MESSAGE } from './WebsocketActions';
 
 /**
  * Create a new websocket channel for listening to events
@@ -11,14 +12,20 @@ import { MxedChannel } from './WebsocketMultiplex';
  * 
  * @param  {MxedChannel} socket The multiplexed channel
  */
-export default function createSocketEventChannel(socket: MxedChannel, decoder: ) {
+export default function createSocketEventChannel(socket: WebSocket, decoder: WebsocketMultiplexDecoder) {
   return eventChannel(emit => {
     
-    socket.addEventListener('message', (e : MessageEvent<Blob>) => {
-        const data = e.data;
+    socket.addEventListener('message', async (e : MessageEvent<Blob | ArrayBuffer>) => {
+        let data = e.data;
+        if (e.data instanceof Blob) {
+          data = await e.data.arrayBuffer();
+        } else if (e.data instanceof ArrayBuffer) {
+          data = e.data;
+        }
+        const resp = decoder(data as ArrayBuffer);
         emit({
-          type: eventType,
-          payload
+          type: WEBSOCKET_ON_MESSAGE,
+          payload: resp
         });
       });
 

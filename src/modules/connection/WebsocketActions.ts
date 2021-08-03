@@ -4,3 +4,5 @@ export const WEBSOCKET_DISCONNECTED_WITH_ERROR = 'websocket/connection:disconnec
 export const DISCONNECT_WEBSOCKET = 'websocket/disconnect';
 export const WEBSOCKET_DISCONNECTED_NORMALLY = 'websocket/disconnected-normally';
 export const WEBSOCKET_LISTENERS_ATTACHED = 'websocket/listeners-attached';
+export const WEBSOCKET_ON_MESSAGE = 'websocket/on-message';
+export const WEBSOCKET_SEND_MESSAGE = 'websocket/send-message';
