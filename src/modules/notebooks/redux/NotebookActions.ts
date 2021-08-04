@@ -1,4 +1,4 @@
-import { NotebookModel } from "../Types";
+import { NotebookModel } from "../NotebookTypes";
 
 export const NOTEBOOK_CREATE_ACTION_TYPE = 'notebooks/create';
 export const NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE = 'notebooks/create:success';

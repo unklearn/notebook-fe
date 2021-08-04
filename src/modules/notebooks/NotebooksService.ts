@@ -1,6 +1,6 @@
 import { fetch } from "../../utils/Fetch";
 import { CreateNotebookAction } from "./redux/NotebookActions";
-import { NotebookModel } from "./Types";
+import { NotebookModel } from "./NotebookTypes";
 
 export class NotebookServiceError extends Error {
     public code: string;

@@ -1,5 +1,5 @@
 import { ModelStatus } from "../../../redux/Types";
-import { NotebookModel } from "../Types";
+import { NotebookModel } from "../NotebookTypes";
 import { CreateNotebookAction, NotebookActions, NOTEBOOK_CREATE_ACTION_TYPE } from "./NotebookActions";
 
 export type NotebooksReduxState = {

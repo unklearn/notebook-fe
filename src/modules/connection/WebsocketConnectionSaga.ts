@@ -65,7 +65,6 @@ export function* prepareSocket(socket: WebSocket) {
         if (yield cancelled()) {
             // close the channel
             if (socketChannel !== undefined) {
-
                 socketChannel.close();
             }
         } else {
@@ -76,7 +75,7 @@ export function* prepareSocket(socket: WebSocket) {
     }
 }
 
-export function* connect(socket: WebSocket) {
+export function* websocketConnectSaga(socket: WebSocket) {
     // starts the task in the background
     const socketTask : Task = yield fork(prepareSocket, socket);
 

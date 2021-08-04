@@ -1,9 +1,9 @@
-import { NotebookService, NotebookServiceError } from "../../Service";
+import { NotebookService, NotebookServiceError } from "../../NotebooksService";
 import { call, put, takeEvery } from 'redux-saga/effects';
 import { cloneableGenerator } from '@redux-saga/testing-utils';
 import { createNotebookAction, createNotebookFailureAction, createNotebookSuccessAction } from "../NotebookActions";
 import { createNotebookSaga, notebookSagaWatcher } from "../NotebookSagas";
-import { NotebookModel } from "../../Types";
+import { NotebookModel } from "../../NotebookTypes";
 
 test('notebookSagaWatcher:create-notebook', function() {
     const action = createNotebookAction({id: "foo", name:"Foo", description: "Foo desc"});

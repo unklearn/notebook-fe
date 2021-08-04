@@ -1,6 +1,6 @@
 import { call, put, takeEvery } from "redux-saga/effects";
-import { NotebookService, NotebookServiceError } from "../Service";
-import { NotebookModel } from "../Types";
+import { NotebookService, NotebookServiceError } from "../NotebooksService";
+import { NotebookModel } from "../NotebookTypes";
 import { CreateNotebookAction, createNotebookFailureAction, createNotebookSuccessAction, NOTEBOOK_CREATE_ACTION_TYPE } from "./NotebookActions";
 
 /**
