@@ -1,10 +1,7 @@
 import React from "react";
-import { FileCell } from "../../cells/components/FileCell";
-import { MarkdownCell } from "../../cells/components/MarkdownCell";
-import { TerminalCell } from "../../cells/components/TerminalCell";
 import { ContainerConfigurationsPanel } from "./ContainerConfigurationsPanel";
-import { ContainerConfiguration } from "../../containers/Types";
 import { NotebookModel } from "../NotebookTypes";
+import { ContainerConfigurationPanelContainer } from "../containers/ContainerConfigurationPanelContainer";
 
 export interface NotebookProps {
   // id of the notebook
@@ -61,13 +58,7 @@ export class Notebook extends React.Component<NotebookProps> {
           </section>
           {/* Runtime configurations go first */}
 
-          <ContainerConfigurationsPanel
-            configurations={notebook.containers}
-            handleFileAdd={console.log}
-            handleDocAdd={console.log}
-            onCreateNew={console.log}
-            handleCommandRun={console.log}
-          />
+          <ContainerConfigurationPanelContainer notebookId={notebook.id} />
 
           <section className="section">{notebook.cells}</section>
         </div>
@@ -89,17 +80,7 @@ export class Notebook extends React.Component<NotebookProps> {
   //     // Advertise via root socket
   //     const rootChannel = this.state.channelMap[this.props.id];
   //     if (rootChannel) {
-  //         rootChannel.send("container:start", JSON.stringify({
-  //             image: config.image,
-  //             tag: config.tag,
-  //             network_options: {
-  //                 ports: config.ports.split(' ')
-  //             },
-  //             name: config.name,
-  //             command: config.startCommand.split(' '),
-  //             env: Object.keys(config.envVars).map((k) => k + '=' + config.envVars[k])
-  //         }))
-  //     }
+
   // }
 
   // addRootChannelHandlers = (root: MxedChannel) => {

@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
-import CollapsedLabel from 'shared/labels/CollapsedLabel';
-import Dropdown from 'shared/dropdown/Dropdown';
-import { getColorForName } from 'utils/Palette';
-import './CellSelectorDropdown.css';
+import CollapsedLabel from "shared/labels/CollapsedLabel";
+import Dropdown from "shared/dropdown/Dropdown";
+import { getColorForName } from "utils/Palette";
+import "./CellSelectorDropdown.css";
 
 export default class CellSelectorDropdown extends Dropdown {
   // *********************************************************
@@ -13,7 +13,7 @@ export default class CellSelectorDropdown extends Dropdown {
   static defaultProps = {
     selectedItem: undefined,
     selections: [],
-    labelAccessor: d => d
+    labelAccessor: (d) => d,
   };
 
   static propTypes = {
@@ -44,13 +44,13 @@ export default class CellSelectorDropdown extends Dropdown {
     /**
      * Accessor for collapsed label
      */
-    collapsedLabelAccessor: PropTypes.func
+    collapsedLabelAccessor: PropTypes.func,
   };
 
   // *********************************************************
   // React methods
   // *********************************************************
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps) {
     if (prevProps.selectedItem !== this.props.selectedItem) {
       if (!this.props.selectedItem && this.props.selections.length === 1) {
         this.props.onSelect(this.props.selections[0].value);
@@ -58,18 +58,18 @@ export default class CellSelectorDropdown extends Dropdown {
     }
   }
 
-  render () {
+  render() {
     const {
       name,
       selections,
       selectedItem,
       labelAccessor,
       secondaryLabelAccessor,
-      collapsedLabelAccessor
+      collapsedLabelAccessor,
     } = this.props;
     const { open } = this.state;
     return (
-      <div ref={el => (this.container = el)} className='cell-type-dropdown'>
+      <div ref={(el) => (this.container = el)} className="cell-type-dropdown">
         <CollapsedLabel
           text={
             selectedItem
@@ -80,11 +80,11 @@ export default class CellSelectorDropdown extends Dropdown {
         />
         {open && (
           <React.Fragment>
-            <ul className='cell-type-dropdown__list'>
+            <ul className="cell-type-dropdown__list">
               <li
-                className='cell-type-dropdown__list-item'
+                className="cell-type-dropdown__list-item"
                 style={{
-                  textAlign: 'center'
+                  textAlign: "center",
                 }}
               >
                 {name}
@@ -92,20 +92,20 @@ export default class CellSelectorDropdown extends Dropdown {
               {selections.map((selection, i) => {
                 return (
                   <li
-                    className='cell-type-dropdown__list-item'
+                    className="cell-type-dropdown__list-item"
                     key={i}
                     onClick={this.onSelect.bind(null, selection.value)}
                   >
-                    <span className='cell-type-dropdown__list-item-label'>
+                    <span className="cell-type-dropdown__list-item-label">
                       {labelAccessor(selection)}
                     </span>
                     {secondaryLabelAccessor && (
                       <span
-                        className='cell-type-dropdown__list-item-icon'
+                        className="cell-type-dropdown__list-item-icon"
                         style={{
                           color: getColorForName(
                             secondaryLabelAccessor(selection)
-                          )
+                          ),
                         }}
                       >
                         {secondaryLabelAccessor(selection)}
@@ -123,7 +123,7 @@ export default class CellSelectorDropdown extends Dropdown {
   // *********************************************************
   // Private methods
   // *********************************************************
-  onSelect = option => {
+  onSelect = (option) => {
     this.toggleOpen();
     this.props.onSelect(option);
   };

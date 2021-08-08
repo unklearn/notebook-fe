@@ -20,7 +20,7 @@ test("createNotebookAction", () => {
     type: NOTEBOOK_CREATE_ACTION_TYPE,
     payload: {
       ...notebook,
-      hash: "eyJpZCI6ImZvbyIsIm5hbWUiOiJmb28iLCJkZXNjcmlwdGlvbiI6ImRlc2MifQ==",
+      hash: "eyJpZCI6ImZvbyIsIm5hbWUiOiJmb28iLCJkZXNjcmlwdGlvbiI6ImRlc2MiLCJjb250YWluZXJzIjpbXSwiY2VsbHMiOltdfQ==",
     },
   });
 });

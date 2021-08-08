@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ContainerConfiguration } from "../Types";
+import { ContainerConfiguration } from "../NotebookTypes";
 import "./ContainerConfigurationsPanel.css";
 
 export interface ContainerConfigurationsPanelProps {
@@ -321,10 +321,10 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
           <ContainerConfigurationDetails
             config={activeConfig}
             onFileAdd={() => {
-              handleFileAdd(activeConfig.id);
+              handleFileAdd("foo");
             }}
             onCommandRun={(cmd) => {
-              handleCommandRun(activeConfig.id, cmd);
+              handleCommandRun("fooey", cmd);
             }}
             onDocAdd={handleDocAdd}
           />

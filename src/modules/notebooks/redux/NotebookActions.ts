@@ -16,10 +16,7 @@ export const NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE =
  */
 export interface CreateNotebookAction {
   type: typeof NOTEBOOK_CREATE_ACTION_TYPE;
-  payload: {
-    id?: string;
-    name: string;
-    description: string;
+  payload: Partial<NotebookModel> & {
     hash: string;
   };
 }
@@ -64,29 +61,19 @@ export interface GetNotebookByIdFailureAction {
 }
 
 /**
- * @param options.id optional id of notebook
- * @param options.name The name of the notebook
- * @param options.description The description of the notebook
+ * @param notebookData The notebook data payload
  * @returns action
  */
-export function createNotebookAction({
-  id,
-  name,
-  description,
-}: {
-  id?: string;
-  name: string;
-  description: string;
-}): CreateNotebookAction {
+export function createNotebookAction(
+  notebookData: Partial<NotebookModel>
+): CreateNotebookAction {
   return {
     type: NOTEBOOK_CREATE_ACTION_TYPE,
     payload: {
-      id,
-      name,
-      description,
+      ...notebookData,
       // Use the hash to track status of error/create etc
       // Without the hash user cannot be notified of errors
-      hash: btoa(JSON.stringify({ id, name, description })),
+      hash: btoa(JSON.stringify(notebookData)),
     },
   };
 }

@@ -59,7 +59,7 @@ const encoder = new TextEncoder();
 //         }
 //     }
 //     send(eventName: string, data: any) {
-        
+
 //         this.ws.send(finalBuf);
 //     };
 //     close() {
@@ -74,7 +74,6 @@ const encoder = new TextEncoder();
 //     private ws: WebSocket;
 //     private channels: Record<string, MxedChannel>;
 //     public onopen: (ws: WebSocket, event: any) => void;
-
 
 //     constructor(ws: WebSocket, onopen?: (ws: WebSocket, event: any) => void) {
 //         this.ws = ws;
@@ -99,40 +98,56 @@ const encoder = new TextEncoder();
  * @returns DemuxedPayload containing data
  */
 export function socketDemuxer(buffer: ArrayBuffer): DemuxedPayload {
-    // Parse 4 first bytes as littleEndian
-    const bufferLen = buffer.byteLength;
-    const channelIdLength = Math.min(Math.min(new DataView(buffer, 0, 4).getUint32(0, true),  256), bufferLen);
-    const eventNameLength = Math.min(Math.min(new DataView(buffer, 4, 8).getUint32(0, true), 256), bufferLen);
-    // Parse channelId and eventName
-    const channelId = new TextDecoder().decode(buffer.slice(8, 8 + channelIdLength));
-    const eventName = new TextDecoder().decode(buffer.slice(8 + channelIdLength, 8 + channelIdLength + eventNameLength));
+  // Parse 4 first bytes as littleEndian
+  const bufferLen = buffer.byteLength;
+  const channelIdLength = Math.min(
+    Math.min(new DataView(buffer, 0, 4).getUint32(0, true), 256),
+    bufferLen
+  );
+  const eventNameLength = Math.min(
+    Math.min(new DataView(buffer, 4, 8).getUint32(0, true), 256),
+    bufferLen
+  );
+  // Parse channelId and eventName
+  const channelId = new TextDecoder().decode(
+    buffer.slice(8, 8 + channelIdLength)
+  );
+  const eventName = new TextDecoder().decode(
+    buffer.slice(8 + channelIdLength, 8 + channelIdLength + eventNameLength)
+  );
 
-    return {
-        channelId,
-        eventName,
-        data: buffer.slice(8 + channelIdLength + eventNameLength)
-    };
+  return {
+    channelId,
+    eventName,
+    data: buffer.slice(8 + channelIdLength + eventNameLength),
+  };
 }
 
-export function socketMuxer(channelId: string, eventName: string, data: string | ArrayBuffer | ArrayBufferLike) : Uint8Array {
-    // Create arraybuffer
-    if (typeof data === "string") {
-        data = encoder.encode(data).buffer;
-    }
-    //debugger
-    // Create unsigned 32 view
-    const lengthBuf = new Uint32Array(2);
-    lengthBuf[0] = channelId.length;
-    lengthBuf[1] = eventName.length;
-    const nameBuf = new Uint8Array(channelId.length + eventName.length);
-    const channelIdBuf = encoder.encode(channelId);
-    nameBuf.set(channelIdBuf, 0);
-    nameBuf.set(encoder.encode(eventName), channelIdBuf.byteLength);
+export function socketMuxer(
+  channelId: string,
+  eventName: string,
+  data: string | ArrayBuffer | ArrayBufferLike
+): Uint8Array {
+  // Create arraybuffer
+  if (typeof data === "string") {
+    data = encoder.encode(data).buffer;
+  }
+  //debugger
+  // Create unsigned 32 view
+  const lengthBuf = new Uint32Array(2);
+  lengthBuf[0] = channelId.length;
+  lengthBuf[1] = eventName.length;
+  const nameBuf = new Uint8Array(channelId.length + eventName.length);
+  const channelIdBuf = encoder.encode(channelId);
+  nameBuf.set(channelIdBuf, 0);
+  nameBuf.set(encoder.encode(eventName), channelIdBuf.byteLength);
 
-    // Now we add remaining data as U8array with offset
-    const finalBuf = new Uint8Array(lengthBuf.byteLength + nameBuf.byteLength + data.byteLength);
-    finalBuf.set(new Uint8Array(lengthBuf.buffer), 0);
-    finalBuf.set(nameBuf, lengthBuf.byteLength);
-    finalBuf.set(new Uint8Array(data), lengthBuf.byteLength + nameBuf.byteLength);
-    return finalBuf;
+  // Now we add remaining data as U8array with offset
+  const finalBuf = new Uint8Array(
+    lengthBuf.byteLength + nameBuf.byteLength + data.byteLength
+  );
+  finalBuf.set(new Uint8Array(lengthBuf.buffer), 0);
+  finalBuf.set(nameBuf, lengthBuf.byteLength);
+  finalBuf.set(new Uint8Array(data), lengthBuf.byteLength + nameBuf.byteLength);
+  return finalBuf;
 }

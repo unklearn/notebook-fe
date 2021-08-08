@@ -17,24 +17,8 @@ export interface INotebookCell {
   getType(): string;
 }
 
-export class MarkdownCell implements INotebookCell {
-  id: string;
-  index: number;
-  type = "markdown";
-  content: string;
-  constructor(id: string, index: number, content: string) {
-    this.id = id;
-    this.index = index;
-    this.content = content || "";
-  }
-
-  getType() {
-    return this.type;
-  }
-}
-
 export interface ContainerConfiguration {
-  id?: string;
+  id: string;
   // Container name
   name: string;
   // Docker image
@@ -50,3 +34,5 @@ export interface ContainerConfiguration {
   // The state of the runtime
   status: "pending" | "starting" | "started" | "stopped";
 }
+
+export const CONTAINER_START_EVENT_NAME = "container:start";
