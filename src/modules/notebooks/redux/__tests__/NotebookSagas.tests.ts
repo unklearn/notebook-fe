@@ -1,11 +1,12 @@
 import { NotebookService, NotebookServiceError } from "../../NotebooksService";
-import { call, put, take, takeEvery } from "redux-saga/effects";
+import { call, put, select } from "redux-saga/effects";
 import { cloneableGenerator } from "@redux-saga/testing-utils";
 import {
   createNotebookAction,
   createNotebookContainerAction,
   createNotebookFailureAction,
   createNotebookSuccessAction,
+  executeCommandInContainerAction,
   getNotebookByIdAction,
   getNotebookFailureAction,
   getNotebookSuccessAction,
@@ -13,13 +14,19 @@ import {
 import {
   createNotebookContainerSaga,
   createNotebookSaga,
+  executeCommandInContainerSaga,
   getNotebookByIdSaga,
   notebookSagaWatcher,
 } from "../NotebookSagas";
 import { NotebookModel } from "../../NotebookTypes";
 import { Action } from "redux";
 import { sendWebsocketMessageAction } from "../../../connection/WebsocketActions";
-import { CONTAINER_START_EVENT_NAME } from "../../../channels/ChannelTypes";
+import {
+  CONTAINER_COMMAND_EXEC_EVENT_NAME,
+  CONTAINER_START_EVENT_NAME,
+} from "../../../channels/ChannelTypes";
+import { selectContainerByIdFactory } from "../NotebookSelectors";
+import { containerFixture } from "../__fixtures__/NotebookTestFixtures";
 
 describe("createNotebookSaga", function () {
   test("createNotebookSaga:success", function () {
@@ -148,6 +155,52 @@ describe("createNotebookContainerSaga", function () {
             name: "django",
             command: ["sleep", "infinity"],
             env: [],
+          })
+        )
+      )
+    );
+  });
+});
+
+describe("executeCommandInContainerSaga", function () {
+  test("does nothing for missing container", function () {
+    const action = executeCommandInContainerAction("nid", "cid", "cellId", [
+      "bash",
+    ]);
+    const gen = executeCommandInContainerSaga(action);
+    // @ts-expect-error Deep comparison of anonymous function does not work
+    expect(gen.next().value.type).toEqual("SELECT");
+    expect(gen.next(undefined).done).toEqual(true);
+  });
+  test("does nothing for pending container", function () {
+    const action = executeCommandInContainerAction("nid", "cid", "cellId", [
+      "bash",
+    ]);
+    const gen = executeCommandInContainerSaga(action);
+    // @ts-expect-error Deep comparison of anonymous function does not work
+    expect(gen.next().value.type).toEqual("SELECT");
+    expect(gen.next({ ...containerFixture, status: "pending" }).done).toEqual(
+      true
+    );
+  });
+  test("sends execute command for running container", function () {
+    const action = executeCommandInContainerAction("nid", "cid", "cellId", [
+      "bash",
+    ]);
+    const gen = executeCommandInContainerSaga(action);
+    // @ts-expect-error Deep comparison of anonymous function does not work
+    expect(gen.next().value.type).toEqual("SELECT");
+    expect(gen.next({ ...containerFixture, status: "started" }).value).toEqual(
+      put(
+        sendWebsocketMessageAction(
+          "cid",
+          CONTAINER_COMMAND_EXEC_EVENT_NAME,
+          JSON.stringify({
+            cell_id: "cellId",
+            interactive: false,
+            use_tty: false,
+            timeout: -1,
+            command: ["bash"],
           })
         )
       )

@@ -1,8 +1,11 @@
 import { call, put, select, takeEvery } from "redux-saga/effects";
-import { CONTAINER_START_EVENT_NAME } from "../../channels/ChannelTypes";
+import {
+  CONTAINER_COMMAND_EXEC_EVENT_NAME,
+  CONTAINER_START_EVENT_NAME,
+} from "../../channels/ChannelTypes";
 import { sendWebsocketMessageAction } from "../../connection/WebsocketActions";
 import { NotebookService, NotebookServiceError } from "../NotebooksService";
-import { NotebookModel } from "../NotebookTypes";
+import { ContainerConfiguration, NotebookModel } from "../NotebookTypes";
 import {
   CreateNotebookAction,
   CreateNotebookContainerAction,
@@ -17,6 +20,7 @@ import {
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_ACTION_TYPE,
 } from "./NotebookActions";
+import { selectContainerByIdFactory } from "./NotebookSelectors";
 
 /**
  * Saga that handles the creation of a notebook
@@ -98,8 +102,33 @@ export function* executeCommandInContainerSaga(
   action: ExecuteCommandInContainerAction
 ) {
   // Check if the container is running
-  // const { containerId } = action.payload;
-  // const container = yield select(selectContainerById(containerId));
+  const {
+    notebookId,
+    containerId,
+    cellId,
+    interactive,
+    useTty,
+    timeout,
+    command,
+  } = action.payload;
+  const container: ContainerConfiguration | undefined = yield select(
+    selectContainerByIdFactory(notebookId, containerId)
+  );
+  if (container && container.status === "started") {
+    yield put(
+      sendWebsocketMessageAction(
+        containerId,
+        CONTAINER_COMMAND_EXEC_EVENT_NAME,
+        JSON.stringify({
+          cell_id: cellId,
+          interactive,
+          use_tty: useTty,
+          timeout,
+          command: command,
+        })
+      )
+    );
+  }
 }
 
 export function* notebookSagaWatcher() {
