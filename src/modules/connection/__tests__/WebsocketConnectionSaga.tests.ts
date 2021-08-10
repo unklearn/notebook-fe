@@ -1,22 +1,14 @@
-import {
-  take,
-  put,
-  all,
-  call,
-  fork,
-  cancel,
-  cancelled,
-} from "redux-saga/effects";
-import { createMockTask, cloneableGenerator } from "@redux-saga/testing-utils";
+import { cloneableGenerator } from "@redux-saga/testing-utils";
 import { channel } from "redux-saga";
-import createSocketChannel from "../WebsocketEventChannel";
+import { call, fork, put, take } from "redux-saga/effects";
+import { actionizeChannelEventType } from "../../channels/ChannelTypes";
 import * as ActionTypes from "../WebsocketActions";
 import {
+  prepareSocket,
   receiveMessages,
   sendMessage,
-  prepareSocket,
-  SocketChannel,
 } from "../WebsocketConnectionSaga";
+import createSocketChannel from "../WebsocketEventChannel";
 import { socketDemuxer, socketMuxer } from "../WebsocketMultiplex";
 
 describe("WebsocketListenerSaga", () => {
@@ -25,21 +17,56 @@ describe("WebsocketListenerSaga", () => {
       const c = channel();
       // @ts-expect-error
       const gen = receiveMessages(c);
-      const action = { type: "event", payload: "foo" };
+      const d = new ArrayBuffer(2);
+      const action = {
+        type: "event",
+        payload: { channelId: "c", eventName: "e", data: d },
+      };
       expect(gen.next().value).toEqual(take(c));
-      expect(gen.next(action).value).toEqual(put(action));
+      expect(gen.next(action).value).toEqual(
+        put({
+          type: actionizeChannelEventType("e"),
+          payload: {
+            channelId: "c",
+            data: d,
+          },
+        })
+      );
     });
 
     test("puts messages one after the other", () => {
       const c = channel();
       // @ts-expect-error
       const gen = receiveMessages(c);
-      let action = { type: "event", payload: "foo" };
+      const d = new ArrayBuffer(2);
+      let action = {
+        type: "event",
+        payload: { channelId: "c", eventName: "e", data: d },
+      };
       expect(gen.next().value).toEqual(take(c));
-      expect(gen.next(action).value).toEqual(put(action));
-      action = { type: "event2", payload: "foo2" };
+      expect(gen.next(action).value).toEqual(
+        put({
+          type: actionizeChannelEventType("e"),
+          payload: {
+            channelId: "c",
+            data: d,
+          },
+        })
+      );
+      action = {
+        type: "event",
+        payload: { channelId: "c2", eventName: "e2", data: d },
+      };
       expect(gen.next().value).toEqual(take(c));
-      expect(gen.next(action).value).toEqual(put(action));
+      expect(gen.next(action).value).toEqual(
+        put({
+          type: actionizeChannelEventType("e2"),
+          payload: {
+            channelId: "c2",
+            data: d,
+          },
+        })
+      );
     });
   });
 
