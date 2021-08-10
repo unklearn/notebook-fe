@@ -1,7 +1,6 @@
 import { cloneableGenerator } from "@redux-saga/testing-utils";
 import { channel } from "redux-saga";
 import { call, fork, put, take } from "redux-saga/effects";
-import { actionizeChannelEventType } from "../../channels/ChannelTypes";
 import * as ActionTypes from "../WebsocketActions";
 import {
   prepareSocket,
@@ -25,8 +24,9 @@ describe("WebsocketListenerSaga", () => {
       expect(gen.next().value).toEqual(take(c));
       expect(gen.next(action).value).toEqual(
         put({
-          type: actionizeChannelEventType("e"),
+          type: "event",
           payload: {
+            eventName: "e",
             channelId: "c",
             data: d,
           },
@@ -46,8 +46,9 @@ describe("WebsocketListenerSaga", () => {
       expect(gen.next().value).toEqual(take(c));
       expect(gen.next(action).value).toEqual(
         put({
-          type: actionizeChannelEventType("e"),
+          type: "event",
           payload: {
+            eventName: "e",
             channelId: "c",
             data: d,
           },
@@ -60,8 +61,9 @@ describe("WebsocketListenerSaga", () => {
       expect(gen.next().value).toEqual(take(c));
       expect(gen.next(action).value).toEqual(
         put({
-          type: actionizeChannelEventType("e2"),
+          type: "event",
           payload: {
+            eventName: "e2",
             channelId: "c2",
             data: d,
           },

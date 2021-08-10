@@ -2,8 +2,13 @@ import { call, put, select, takeEvery } from "redux-saga/effects";
 import {
   CONTAINER_COMMAND_EXEC_EVENT_NAME,
   CONTAINER_START_EVENT_NAME,
+  CONTAINER_STATUS_EVENT_NAME,
 } from "../../channels/ChannelTypes";
-import { sendWebsocketMessageAction } from "../../connection/WebsocketActions";
+import { WebsocketMessageAction } from "../../connection/Types";
+import {
+  sendWebsocketMessageAction,
+  WEBSOCKET_ON_MESSAGE,
+} from "../../connection/WebsocketActions";
 import { NotebookService, NotebookServiceError } from "../NotebooksService";
 import { ContainerConfiguration, NotebookModel } from "../NotebookTypes";
 import {
@@ -21,6 +26,7 @@ import {
   NOTEBOOK_GET_BY_ID_ACTION_TYPE,
 } from "./NotebookActions";
 import { selectContainerByIdFactory } from "./NotebookSelectors";
+import { notebookContainerStatusSocketEventAction } from "./NotebookSocketEvents";
 
 /**
  * Saga that handles the creation of a notebook
@@ -114,7 +120,7 @@ export function* executeCommandInContainerSaga(
   const container: ContainerConfiguration | undefined = yield select(
     selectContainerByIdFactory(notebookId, containerId)
   );
-  if (container && container.status === "started") {
+  if (container && container.status === "running") {
     yield put(
       sendWebsocketMessageAction(
         containerId,
@@ -131,6 +137,16 @@ export function* executeCommandInContainerSaga(
   }
 }
 
+export function* handleWebsocketMessageSaga(action: WebsocketMessageAction) {
+  switch (action.payload.eventName) {
+    case CONTAINER_STATUS_EVENT_NAME:
+      yield put(notebookContainerStatusSocketEventAction(action));
+      break;
+    default:
+      break;
+  }
+}
+
 export function* notebookSagaWatcher() {
   yield takeEvery(NOTEBOOK_CREATE_ACTION_TYPE, createNotebookSaga);
   yield takeEvery(NOTEBOOK_GET_BY_ID_ACTION_TYPE, getNotebookByIdSaga);
@@ -142,4 +158,5 @@ export function* notebookSagaWatcher() {
     NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
     executeCommandInContainerSaga
   );
+  yield takeEvery(WEBSOCKET_ON_MESSAGE, handleWebsocketMessageSaga);
 }

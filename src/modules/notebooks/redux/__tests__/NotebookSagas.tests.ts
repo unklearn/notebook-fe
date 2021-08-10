@@ -190,7 +190,7 @@ describe("executeCommandInContainerSaga", function () {
     const gen = executeCommandInContainerSaga(action);
     // @ts-expect-error Deep comparison of anonymous function does not work
     expect(gen.next().value.type).toEqual("SELECT");
-    expect(gen.next({ ...containerFixture, status: "started" }).value).toEqual(
+    expect(gen.next({ ...containerFixture, status: "running" }).value).toEqual(
       put(
         sendWebsocketMessageAction(
           "cid",

@@ -4,9 +4,11 @@ import {
   createNotebookSuccessAction,
   executeCommandInContainerAction,
   NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
+  NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_CREATE_FAILURE_ACTION_TYPE,
   NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE,
+  updateNotebookContainerStatusAction,
 } from "../NotebookActions";
 
 const notebook = {
@@ -60,6 +62,17 @@ test("executeCommandInContainerAction", function () {
       interactive: false,
       useTty: false,
       timeout: -1,
+    },
+  });
+});
+
+test("updateNotebookContainerStatusAction", function () {
+  expect(updateNotebookContainerStatusAction("nid", "cid", "running")).toEqual({
+    type: NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
+    payload: {
+      notebookId: "nid",
+      containerId: "cid",
+      status: "running",
     },
   });
 });

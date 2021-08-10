@@ -32,5 +32,5 @@ export interface ContainerConfiguration {
   // List of exposed ports separated by whitespace
   ports: string;
   // The state of the runtime
-  status: "pending" | "starting" | "started" | "stopped";
+  status: "pending" | "running" | "stopped";
 }

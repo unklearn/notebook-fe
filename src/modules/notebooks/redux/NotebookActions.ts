@@ -10,6 +10,8 @@ export const NOTEBOOK_GET_BY_ID_FAILURE_ACTION_TYPE =
   "notebooks/get-by-id:failure";
 export const NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE =
   "notebooks/container-create";
+export const NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE =
+  "notebooks/container-status";
 export const NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE =
   "notebooks/execute-command";
 
@@ -39,6 +41,15 @@ export interface CreateNotebookFailureAction {
   };
 }
 
+export interface UpdateNotebookContainerStatusAction {
+  type: typeof NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    containerId: string;
+    status: ContainerConfiguration["status"];
+  };
+}
+
 export interface GetNotebookByIdAction {
   type: typeof NOTEBOOK_GET_BY_ID_ACTION_TYPE;
   payload: {
@@ -59,6 +70,27 @@ export interface GetNotebookByIdFailureAction {
     notebookId: string;
     error: string;
     missing: boolean;
+  };
+}
+
+export interface CreateNotebookContainerAction {
+  type: typeof NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    configuration: ContainerConfiguration;
+  };
+}
+
+export interface ExecuteCommandInContainerAction {
+  type: typeof NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    containerId: string;
+    cellId: string;
+    interactive?: boolean;
+    useTty?: boolean;
+    timeout?: number;
+    command: string[];
   };
 }
 
@@ -119,6 +151,28 @@ export function createNotebookFailureAction(
 }
 
 /**
+ * Update the status of a notebook container
+ * @param notebookId The id of the notebook
+ * @param containerId The id of the container in the notebook
+ * @param status The status of the container in the notebook
+ * @returns The action to update notebook status
+ */
+export function updateNotebookContainerStatusAction(
+  notebookId: string,
+  containerId: string,
+  status: ContainerConfiguration["status"]
+): UpdateNotebookContainerStatusAction {
+  return {
+    type: NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
+    payload: {
+      notebookId,
+      containerId,
+      status,
+    },
+  };
+}
+
+/**
  * An action to fetch notebook by id
  * @param notebookId The id of the notebook to fetch
  * @returns The action for fetching notebook by id
@@ -160,14 +214,6 @@ export function getNotebookFailureAction(
   };
 }
 
-export interface CreateNotebookContainerAction {
-  type: typeof NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE;
-  payload: {
-    notebookId: string;
-    configuration: ContainerConfiguration;
-  };
-}
-
 /**
  * Add a new container to a notebook. The config dictates what kind of containers are spawned.
  * @param notebookId The id of the notebook
@@ -183,19 +229,6 @@ export function createNotebookContainerAction(
       notebookId,
       configuration: config,
     },
-  };
-}
-
-export interface ExecuteCommandInContainerAction {
-  type: typeof NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE;
-  payload: {
-    notebookId: string;
-    containerId: string;
-    cellId: string;
-    interactive?: boolean;
-    useTty?: boolean;
-    timeout?: number;
-    command: string[];
   };
 }
 
@@ -234,6 +267,7 @@ export type NotebookActions =
   | CreateNotebookSuccessAction
   | CreateNotebookFailureAction
   | CreateNotebookContainerAction
+  | UpdateNotebookContainerStatusAction
   | GetNotebookByIdAction
   | GetNotebookByIdFailureAction
   | GetNotebookByIdSuccessAction

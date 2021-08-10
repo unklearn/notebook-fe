@@ -9,7 +9,6 @@ import {
   takeLatest,
   race,
 } from "redux-saga/effects";
-import { actionizeChannelEventType } from "../channels/ChannelTypes";
 import { DemuxedPayload } from "./Types";
 import {
   DISCONNECT_WEBSOCKET,
@@ -32,16 +31,12 @@ export type SocketChannel = EventChannel<{
 export function* receiveMessages(socketChannel: SocketChannel) {
   while (true) {
     // wait for a message from the channel
-    const { payload }: { type: string; payload: DemuxedPayload } = yield take(
-      socketChannel
-    );
+    const { type, payload }: { type: string; payload: DemuxedPayload } =
+      yield take(socketChannel);
     // a message has been received, dispatch an action with the message payload
     yield put({
-      type: actionizeChannelEventType(payload.eventName),
-      payload: {
-        channelId: payload.channelId,
-        data: payload.data,
-      },
+      type: type,
+      payload: payload,
     });
   }
 }

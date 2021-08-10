@@ -1,14 +1,16 @@
 import { ModelStatus } from "../../../redux/Types";
 import { nestedDeepAssign, nestedDeepGet } from "../../../utils/ObjectUtils";
-import { NotebookModel } from "../NotebookTypes";
+import { ContainerConfiguration, NotebookModel } from "../NotebookTypes";
 import {
   CreateNotebookAction,
   CreateNotebookContainerAction,
   GetNotebookByIdSuccessAction,
   NotebookActions,
   NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE,
+  NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE,
+  UpdateNotebookContainerStatusAction,
 } from "./NotebookActions";
 
 export type NotebooksReduxState = {
@@ -108,6 +110,40 @@ function addConditionalContainerReducer(
   ) as NotebooksReduxState;
 }
 
+/**
+ * Update the status of a container in a notebook
+ */
+function updateContainerStatusReducer(
+  state: NotebooksReduxState,
+  action: UpdateNotebookContainerStatusAction
+): NotebooksReduxState {
+  const { notebookId, containerId, status } = action.payload;
+  const notebook = state.byIds[notebookId];
+  if (!notebook) {
+    return state;
+  }
+  const path = ["byIds", notebookId, "data", "containers"];
+  const containers = nestedDeepGet(state, path) || [];
+  const container = containers.find(
+    (c: ContainerConfiguration) => c.id === containerId
+  );
+  if (!container) {
+    return state;
+  }
+  return nestedDeepAssign(state, ["byIds", notebookId, "data"], {
+    ...notebook.data,
+    containers: notebook.data.containers.map((c) => {
+      if (c.id === containerId) {
+        return {
+          ...c,
+          status,
+        };
+      }
+      return c;
+    }),
+  }) as NotebooksReduxState;
+}
+
 export function notebooksReducer(
   state: NotebooksReduxState = INITIAL_STATE,
   action: NotebookActions
@@ -119,6 +155,8 @@ export function notebooksReducer(
       return addNotebookReducer(state, action);
     case NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE:
       return addConditionalContainerReducer(state, action);
+    case NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE:
+      return updateContainerStatusReducer(state, action);
   }
   return state;
 }
