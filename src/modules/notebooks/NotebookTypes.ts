@@ -34,5 +34,3 @@ export interface ContainerConfiguration {
   // The state of the runtime
   status: "pending" | "starting" | "started" | "stopped";
 }
-
-export const CONTAINER_START_EVENT_NAME = "container:start";

@@ -1,16 +1,19 @@
-import { call, put, takeEvery } from "redux-saga/effects";
+import { call, put, select, takeEvery } from "redux-saga/effects";
+import { CONTAINER_START_EVENT_NAME } from "../../channels/ChannelTypes";
 import { sendWebsocketMessageAction } from "../../connection/WebsocketActions";
 import { NotebookService, NotebookServiceError } from "../NotebooksService";
-import { CONTAINER_START_EVENT_NAME, NotebookModel } from "../NotebookTypes";
+import { NotebookModel } from "../NotebookTypes";
 import {
   CreateNotebookAction,
   CreateNotebookContainerAction,
   createNotebookFailureAction,
   createNotebookSuccessAction,
+  ExecuteCommandInContainerAction,
   GetNotebookByIdAction,
   getNotebookFailureAction,
   getNotebookSuccessAction,
   NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE,
+  NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_ACTION_TYPE,
 } from "./NotebookActions";
@@ -91,11 +94,23 @@ export function* createNotebookContainerSaga(
   );
 }
 
+export function* executeCommandInContainerSaga(
+  action: ExecuteCommandInContainerAction
+) {
+  // Check if the container is running
+  // const { containerId } = action.payload;
+  // const container = yield select(selectContainerById(containerId));
+}
+
 export function* notebookSagaWatcher() {
   yield takeEvery(NOTEBOOK_CREATE_ACTION_TYPE, createNotebookSaga);
   yield takeEvery(NOTEBOOK_GET_BY_ID_ACTION_TYPE, getNotebookByIdSaga);
   yield takeEvery(
     NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE,
     createNotebookContainerSaga
+  );
+  yield takeEvery(
+    NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
+    executeCommandInContainerSaga
   );
 }

@@ -2,6 +2,8 @@ import {
   createNotebookAction,
   createNotebookFailureAction,
   createNotebookSuccessAction,
+  executeCommandInContainerAction,
+  NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_CREATE_FAILURE_ACTION_TYPE,
   NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE,
@@ -41,6 +43,23 @@ test("createNotebookFailureAction", () => {
     payload: {
       hash: "hashy",
       error: "foo",
+    },
+  });
+});
+
+test("executeCommandInContainerAction", function () {
+  expect(
+    executeCommandInContainerAction("nbid", "containerId", "cellId", ["bash"])
+  ).toEqual({
+    type: NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
+    payload: {
+      notebookId: "nbid",
+      containerId: "containerId",
+      cellId: "cellId",
+      command: ["bash"],
+      interactive: false,
+      useTty: false,
+      timeout: -1,
     },
   });
 });

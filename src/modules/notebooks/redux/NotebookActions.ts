@@ -10,6 +10,8 @@ export const NOTEBOOK_GET_BY_ID_FAILURE_ACTION_TYPE =
   "notebooks/get-by-id:failure";
 export const NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE =
   "notebooks/container-create";
+export const NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE =
+  "notebooks/execute-command";
 
 /**
  * Represents a create notebook action payload
@@ -184,6 +186,48 @@ export function createNotebookContainerAction(
   };
 }
 
+export interface ExecuteCommandInContainerAction {
+  type: typeof NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    containerId: string;
+    cellId: string;
+    interactive?: boolean;
+    useTty?: boolean;
+    timeout?: number;
+    command: string[];
+  };
+}
+
+/**
+ * Execute a command in container
+ * @param notebookId The id of the notebook
+ * @param containerId The id of the container
+ * @param cellId Id of the cell that holds the command output cell
+ * @param command The command to run
+ * @param object Optional options for command.
+ */
+export function executeCommandInContainerAction(
+  notebookId: string,
+  containerId: string,
+  cellId: string,
+  command: string[],
+  { interactive = false, useTty = false, timeout = -1 } = {}
+): ExecuteCommandInContainerAction {
+  return {
+    type: NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
+    payload: {
+      notebookId,
+      containerId,
+      cellId,
+      interactive,
+      timeout,
+      useTty,
+      command,
+    },
+  };
+}
+
 // Export all possible notebook actions here
 export type NotebookActions =
   | CreateNotebookAction
@@ -192,4 +236,5 @@ export type NotebookActions =
   | CreateNotebookContainerAction
   | GetNotebookByIdAction
   | GetNotebookByIdFailureAction
-  | GetNotebookByIdSuccessAction;
+  | GetNotebookByIdSuccessAction
+  | ExecuteCommandInContainerAction;

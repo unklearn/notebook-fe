@@ -38,7 +38,7 @@ const INITIAL_STATE = {
  * @param action CreateNotebookAction The action corresponding to a new notebook
  * @returns state NotebooksReduxState (updated iff the action contains an id)
  */
-export function createNotebookReducer(
+function createNotebookReducer(
   state: NotebooksReduxState,
   action: CreateNotebookAction
 ): NotebooksReduxState {
@@ -48,7 +48,6 @@ export function createNotebookReducer(
       byIds: {
         ...state.byIds,
         [action.payload.id]: {
-          // @ts-expect-error
           data: action.payload as NotebookModel,
           status: "pending",
         },
@@ -63,7 +62,7 @@ export function createNotebookReducer(
  * @param state The notebook redux state
  * @param action The get success action
  */
-export function addNotebookReducer(
+function addNotebookReducer(
   state: NotebooksReduxState,
   action: GetNotebookByIdSuccessAction
 ): NotebooksReduxState {
@@ -85,7 +84,7 @@ export function addNotebookReducer(
  * A reducer function that deals with creating a conditional container for a notebook.
  * Container is marked as pending
  */
-export function addConditionalContainerReducer(
+function addConditionalContainerReducer(
   state: NotebooksReduxState,
   action: CreateNotebookContainerAction
 ): NotebooksReduxState {
@@ -115,7 +114,7 @@ export function notebooksReducer(
 ): NotebooksReduxState {
   switch (action.type) {
     case NOTEBOOK_CREATE_ACTION_TYPE:
-      break;
+      return createNotebookReducer(state, action);
     case NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE:
       return addNotebookReducer(state, action);
     case NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE:

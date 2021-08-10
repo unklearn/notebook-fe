@@ -324,7 +324,7 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
               handleFileAdd("foo");
             }}
             onCommandRun={(cmd) => {
-              handleCommandRun("fooey", cmd);
+              handleCommandRun(activeConfig.id, cmd);
             }}
             onDocAdd={handleDocAdd}
           />
