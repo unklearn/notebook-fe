@@ -1,15 +1,8 @@
-import { CONTAINER_STATUS_EVENT_NAME } from "../../channels/ChannelTypes";
 import { WebsocketMessageAction } from "../../connection/Types";
-import { ContainerConfiguration } from "../NotebookTypes";
-
-export interface NotebookContainerStatusSocketAction {
-  type: typeof CONTAINER_STATUS_EVENT_NAME;
-  payload: {
-    notebookId: string;
-    id: string;
-    status: ContainerConfiguration["status"];
-  };
-}
+import {
+  NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
+  UpdateNotebookContainerStatusAction,
+} from "./NotebookActions";
 
 const decoder = new TextDecoder();
 
@@ -26,17 +19,18 @@ function safeJSONParse(payload: string) {
  */
 export function notebookContainerStatusSocketEventAction(
   socketEvent: WebsocketMessageAction
-): NotebookContainerStatusSocketAction {
+): UpdateNotebookContainerStatusAction {
   const { channelId, data } = socketEvent.payload;
   const statusPayload = safeJSONParse(decoder.decode(data)) || {
     id: null,
     status: "",
   };
   return {
-    type: CONTAINER_STATUS_EVENT_NAME,
+    type: NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
     payload: {
       notebookId: channelId,
-      id: statusPayload.id,
+      hash: statusPayload.hash,
+      containerId: statusPayload.id,
       status: statusPayload.status,
     },
   };

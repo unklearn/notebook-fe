@@ -90,7 +90,7 @@ function addConditionalContainerReducer(
   state: NotebooksReduxState,
   action: CreateNotebookContainerAction
 ): NotebooksReduxState {
-  const { notebookId, configuration } = action.payload;
+  const { notebookId, configuration, hash } = action.payload;
   const notebook = state.byIds[notebookId];
   if (!notebook) {
     return state;
@@ -103,6 +103,7 @@ function addConditionalContainerReducer(
     containers.concat([
       {
         ...configuration,
+        hash,
         status: "pending",
       },
     ]),
@@ -117,25 +118,31 @@ function updateContainerStatusReducer(
   state: NotebooksReduxState,
   action: UpdateNotebookContainerStatusAction
 ): NotebooksReduxState {
-  const { notebookId, containerId, status } = action.payload;
+  const { notebookId, containerId, status, hash } = action.payload;
   const notebook = state.byIds[notebookId];
   if (!notebook) {
     return state;
   }
   const path = ["byIds", notebookId, "data", "containers"];
   const containers = nestedDeepGet(state, path) || [];
-  const container = containers.find(
-    (c: ContainerConfiguration) => c.id === containerId
-  );
+  const container = containers.find((c: ContainerConfiguration) => {
+    if (hash) {
+      // Locate via hash. Before container gets id, we use hash for tracking
+      return c.hash === hash || c.id === containerId;
+    } else {
+      return c.id === containerId;
+    }
+  });
   if (!container) {
     return state;
   }
   return nestedDeepAssign(state, ["byIds", notebookId, "data"], {
     ...notebook.data,
     containers: notebook.data.containers.map((c) => {
-      if (c.id === containerId) {
+      if (c.id === containerId || c.hash === hash) {
         return {
           ...c,
+          id: containerId,
           status,
         };
       }

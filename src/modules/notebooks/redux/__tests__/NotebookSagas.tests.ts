@@ -1,6 +1,12 @@
-import { NotebookService, NotebookServiceError } from "../../NotebooksService";
-import { call, put, select } from "redux-saga/effects";
 import { cloneableGenerator } from "@redux-saga/testing-utils";
+import { call, put } from "redux-saga/effects";
+import {
+  CONTAINER_COMMAND_EXEC_EVENT_NAME,
+  CONTAINER_START_EVENT_NAME,
+} from "../../../channels/ChannelTypes";
+import { sendWebsocketMessageAction } from "../../../connection/WebsocketActions";
+import { NotebookService, NotebookServiceError } from "../../NotebooksService";
+import { NotebookModel } from "../../NotebookTypes";
 import {
   createNotebookAction,
   createNotebookContainerAction,
@@ -16,16 +22,7 @@ import {
   createNotebookSaga,
   executeCommandInContainerSaga,
   getNotebookByIdSaga,
-  notebookSagaWatcher,
 } from "../NotebookSagas";
-import { NotebookModel } from "../../NotebookTypes";
-import { Action } from "redux";
-import { sendWebsocketMessageAction } from "../../../connection/WebsocketActions";
-import {
-  CONTAINER_COMMAND_EXEC_EVENT_NAME,
-  CONTAINER_START_EVENT_NAME,
-} from "../../../channels/ChannelTypes";
-import { selectContainerByIdFactory } from "../NotebookSelectors";
 import { containerFixture } from "../__fixtures__/NotebookTestFixtures";
 
 describe("createNotebookSaga", function () {
@@ -149,6 +146,7 @@ describe("createNotebookContainerSaga", function () {
           JSON.stringify({
             image: "python",
             tag: "3.6",
+            hash: "eyJub3RlYm9va0lkIjoiZm9vIiwiY29uZmlnIjp7Im5hbWUiOiJkamFuZ28iLCJpbWFnZSI6InB5dGhvbiIsInRhZyI6IjMuNiIsImVudlZhcnMiOnt9LCJzdGFydENvbW1hbmQiOiJzbGVlcCBpbmZpbml0eSIsInBvcnRzIjoiODAwMCIsInN0YXR1cyI6InBlbmRpbmciLCJpZCI6IiJ9fQ==",
             network_options: {
               ports: ["8000"],
             },

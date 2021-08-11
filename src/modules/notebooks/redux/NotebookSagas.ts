@@ -86,6 +86,7 @@ export function* createNotebookContainerSaga(
   const eventPayload = JSON.stringify({
     image: configuration.image,
     tag: configuration.tag,
+    hash: action.payload.hash,
     network_options: {
       ports: configuration.ports.split(" "),
     },

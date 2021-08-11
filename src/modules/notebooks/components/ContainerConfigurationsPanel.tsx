@@ -304,7 +304,9 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
                   active === c.name ? setActive("") : setActive(c.name)
                 }
               >
-                <a>{c.name}</a>
+                <a>
+                  {c.name}:{c.status}
+                </a>
               </li>
             ))}
             <li>

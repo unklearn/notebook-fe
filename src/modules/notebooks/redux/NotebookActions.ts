@@ -46,6 +46,7 @@ export interface UpdateNotebookContainerStatusAction {
   payload: {
     notebookId: string;
     containerId: string;
+    hash?: string;
     status: ContainerConfiguration["status"];
   };
 }
@@ -78,6 +79,7 @@ export interface CreateNotebookContainerAction {
   payload: {
     notebookId: string;
     configuration: ContainerConfiguration;
+    hash: string;
   };
 }
 
@@ -228,6 +230,12 @@ export function createNotebookContainerAction(
     payload: {
       notebookId,
       configuration: config,
+      hash: btoa(
+        JSON.stringify({
+          notebookId,
+          config,
+        })
+      ),
     },
   };
 }

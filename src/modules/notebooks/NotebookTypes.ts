@@ -33,4 +33,6 @@ export interface ContainerConfiguration {
   ports: string;
   // The state of the runtime
   status: "pending" | "running" | "stopped";
+  // Optional hash used to store a config signature
+  hash?: string;
 }

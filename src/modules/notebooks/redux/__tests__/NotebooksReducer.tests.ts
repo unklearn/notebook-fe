@@ -65,7 +65,13 @@ describe("notebooksReducer", function () {
         [notebookFixture.id]: {
           data: {
             ...notebookFixture,
-            containers: [{ ...containerFixture, status: "pending" }],
+            containers: [
+              {
+                ...containerFixture,
+                status: "pending",
+                hash: "eyJub3RlYm9va0lkIjoiZm9vIiwiY29uZmlnIjp7ImlkIjoieHh5eSIsImltYWdlIjoicHl0aG9uIiwidGFnIjoiMy42Iiwic3RhcnRDb21tYW5kIjoiIiwicG9ydHMiOiIiLCJlbnZWYXJzIjp7fSwibmFtZSI6ImRqYW5nbyIsInN0YXR1cyI6InBlbmRpbmcifX0=",
+              },
+            ],
           },
           status: "done",
         },
