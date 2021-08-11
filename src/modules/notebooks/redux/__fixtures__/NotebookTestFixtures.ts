@@ -1,4 +1,8 @@
-import { ContainerConfiguration, NotebookModel } from "../../NotebookTypes";
+import {
+  ContainerConfiguration,
+  NotebookModel,
+  TerminalCell,
+} from "../../NotebookTypes";
 
 export const notebookFixture: NotebookModel = {
   id: "foo",
@@ -16,4 +20,11 @@ export const containerFixture: ContainerConfiguration = {
   envVars: {},
   name: "django",
   status: "pending",
+};
+
+export const terminalCellFixture: TerminalCell = {
+  id: "term-cell",
+  type: "terminal",
+  command: ["bash"],
+  containerId: "cid",
 };

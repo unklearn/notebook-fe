@@ -14,6 +14,8 @@ export const NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE =
   "notebooks/container-status";
 export const NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE =
   "notebooks/execute-command";
+export const NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE =
+  "notebooks/create-terminal-cell";
 
 /**
  * Represents a create notebook action payload
@@ -88,11 +90,20 @@ export interface ExecuteCommandInContainerAction {
   payload: {
     notebookId: string;
     containerId: string;
-    cellId: string;
     interactive?: boolean;
     useTty?: boolean;
     timeout?: number;
     command: string[];
+  };
+}
+
+export interface CreateTerminalCellInNotebookAction {
+  type: typeof NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    cellId: string;
+    command: string[];
+    containerId: string;
   };
 }
 
@@ -244,14 +255,12 @@ export function createNotebookContainerAction(
  * Execute a command in container
  * @param notebookId The id of the notebook
  * @param containerId The id of the container
- * @param cellId Id of the cell that holds the command output cell
  * @param command The command to run
  * @param object Optional options for command.
  */
 export function executeCommandInContainerAction(
   notebookId: string,
   containerId: string,
-  cellId: string,
   command: string[],
   { interactive = false, useTty = false, timeout = -1 } = {}
 ): ExecuteCommandInContainerAction {
@@ -260,10 +269,33 @@ export function executeCommandInContainerAction(
     payload: {
       notebookId,
       containerId,
-      cellId,
       interactive,
       timeout,
       useTty,
+      command,
+    },
+  };
+}
+
+/**
+ * Action to create a new terminal cell in the notebook
+ * @param notebookId The id of the notebook
+ * @param containerId The id of the container
+ * @param cellId The id of the cell
+ * @param command The command used to start the terminal
+ */
+export function createTerminalCellAction(
+  notebookId: string,
+  containerId: string,
+  cellId: string,
+  command: string[]
+): CreateTerminalCellInNotebookAction {
+  return {
+    type: NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
+    payload: {
+      notebookId,
+      containerId,
+      cellId,
       command,
     },
   };
@@ -279,4 +311,5 @@ export type NotebookActions =
   | GetNotebookByIdAction
   | GetNotebookByIdFailureAction
   | GetNotebookByIdSuccessAction
-  | ExecuteCommandInContainerAction;
+  | ExecuteCommandInContainerAction
+  | CreateTerminalCellInNotebookAction;

@@ -1,6 +1,8 @@
+import cuid from "cuid";
 import { call, put, select, takeEvery } from "redux-saga/effects";
 import {
   CONTAINER_COMMAND_EXEC_EVENT_NAME,
+  CONTAINER_COMMAND_OUTPUT_EVENT_NAME,
   CONTAINER_START_EVENT_NAME,
   CONTAINER_STATUS_EVENT_NAME,
 } from "../../channels/ChannelTypes";
@@ -16,6 +18,7 @@ import {
   CreateNotebookContainerAction,
   createNotebookFailureAction,
   createNotebookSuccessAction,
+  createTerminalCellAction,
   ExecuteCommandInContainerAction,
   GetNotebookByIdAction,
   getNotebookFailureAction,
@@ -109,19 +112,20 @@ export function* executeCommandInContainerSaga(
   action: ExecuteCommandInContainerAction
 ) {
   // Check if the container is running
-  const {
-    notebookId,
-    containerId,
-    cellId,
-    interactive,
-    useTty,
-    timeout,
-    command,
-  } = action.payload;
+  const { notebookId, containerId, interactive, useTty, timeout, command } =
+    action.payload;
   const container: ContainerConfiguration | undefined = yield select(
     selectContainerByIdFactory(notebookId, containerId)
   );
   if (container && container.status === "running") {
+    // Generate cell id
+    const cellId = cuid();
+    // Create a new cell in the notebook, and set it to listen to the cellId channel
+    yield put(
+      createTerminalCellAction(notebookId, containerId, cellId, command)
+    );
+    // Wipe callback registry
+    CellSocketCallbackRegistry[cellId] = [];
     yield put(
       sendWebsocketMessageAction(
         containerId,
@@ -137,11 +141,22 @@ export function* executeCommandInContainerSaga(
     );
   }
 }
+// A callback registry to call callbacks for
+export const CellSocketCallbackRegistry: {
+  [cellId: string]: Function[];
+} = {};
 
 export function* handleWebsocketMessageSaga(action: WebsocketMessageAction) {
   switch (action.payload.eventName) {
     case CONTAINER_STATUS_EVENT_NAME:
       yield put(notebookContainerStatusSocketEventAction(action));
+      break;
+    case CONTAINER_COMMAND_OUTPUT_EVENT_NAME:
+      // Call stored "fake-socket" and push message
+      const callbacks = CellSocketCallbackRegistry[action.payload.channelId];
+      if (callbacks) {
+        callbacks.forEach((callback) => callback(action.payload.data));
+      }
       break;
     default:
       break;

@@ -5,6 +5,7 @@
   "dependencies": {
     "bulma": "^0.9.3",
     "codemirror": "^5.62.2",
+    "cuid": "^2.1.8",
     "fast-text-encoding": "^1.0.3",
     "jest": "^26.6.0",
     "react": "^17.0.2",

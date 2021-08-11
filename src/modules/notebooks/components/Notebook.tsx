@@ -1,7 +1,8 @@
 import React from "react";
 import { ContainerConfigurationsPanel } from "./ContainerConfigurationsPanel";
-import { NotebookModel } from "../NotebookTypes";
+import { NotebookCell, NotebookModel, TerminalCell } from "../NotebookTypes";
 import { ContainerConfigurationPanelContainer } from "../containers/ContainerConfigurationPanelContainer";
+import { TerminalCellComponent } from "../../cells/components/TerminalCell";
 
 export interface NotebookProps {
   // id of the notebook
@@ -60,10 +61,18 @@ export class Notebook extends React.Component<NotebookProps> {
 
           <ContainerConfigurationPanelContainer notebookId={notebook.id} />
 
-          <section className="section">{notebook.cells}</section>
+          <section className="section">
+            {notebook.cells.map(this.renderCells)}
+          </section>
         </div>
       </div>
     );
+  }
+
+  renderCells(cell: NotebookCell) {
+    if (cell.type === "terminal") {
+      return <TerminalCellComponent key={cell.id} {...cell} />;
+    }
   }
 
   // handleDocAdd = () => {

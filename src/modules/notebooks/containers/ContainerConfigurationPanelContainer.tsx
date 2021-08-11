@@ -1,12 +1,13 @@
 import { connect } from "react-redux";
 import { Dispatch } from "redux";
 import { RootState } from "../../../redux/Store";
-import { ContainerConfiguration } from "../NotebookTypes";
-import { selectNotebookByIdFactory } from "../redux/NotebookSelectors";
 import { ContainerConfigurationsPanel } from "../components/ContainerConfigurationsPanel";
-import { createNotebookContainerAction } from "../redux/NotebookActions";
-import { sendWebsocketMessageAction } from "../../connection/WebsocketActions";
-import { CONTAINER_COMMAND_EXEC_EVENT_NAME } from "../../channels/ChannelTypes";
+import { ContainerConfiguration } from "../NotebookTypes";
+import {
+  createNotebookContainerAction,
+  executeCommandInContainerAction,
+} from "../redux/NotebookActions";
+import { selectNotebookByIdFactory } from "../redux/NotebookSelectors";
 
 export interface ContainerConfigurationPanelContainerProps {
   notebookId: string;
@@ -35,10 +36,11 @@ function mapDispatchToProps(
     handleDocAdd: console.log,
     handleCommandRun: (containerId: string, cmd: string) =>
       dispatch(
-        sendWebsocketMessageAction(
+        executeCommandInContainerAction(
+          ownProps.notebookId,
           containerId,
-          CONTAINER_COMMAND_EXEC_EVENT_NAME,
-          JSON.stringify(cmd.split(" "))
+          cmd.split(" "),
+          { interactive: true, useTty: true }
         )
       ),
   };

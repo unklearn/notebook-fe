@@ -1,6 +1,7 @@
 import {
   createNotebookAction,
   createNotebookContainerAction,
+  createTerminalCellAction,
   getNotebookSuccessAction,
   updateNotebookContainerStatusAction,
 } from "../NotebookActions";
@@ -8,6 +9,7 @@ import { notebooksReducer, NotebooksReduxState } from "../NotebooksReducer";
 import {
   containerFixture,
   notebookFixture,
+  terminalCellFixture,
 } from "../__fixtures__/NotebookTestFixtures";
 
 describe("notebooksReducer", function () {
@@ -70,6 +72,46 @@ describe("notebooksReducer", function () {
                 ...containerFixture,
                 status: "pending",
                 hash: "eyJub3RlYm9va0lkIjoiZm9vIiwiY29uZmlnIjp7ImlkIjoieHh5eSIsImltYWdlIjoicHl0aG9uIiwidGFnIjoiMy42Iiwic3RhcnRDb21tYW5kIjoiIiwicG9ydHMiOiIiLCJlbnZWYXJzIjp7fSwibmFtZSI6ImRqYW5nbyIsInN0YXR1cyI6InBlbmRpbmcifX0=",
+              },
+            ],
+          },
+          status: "done",
+        },
+      },
+    });
+  });
+
+  test("addTerminalCellReducer", function () {
+    const state: NotebooksReduxState = {
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [],
+          },
+          status: "done",
+        },
+      },
+      filtered: {},
+    };
+    const action = createTerminalCellAction(
+      notebookFixture.id,
+      containerFixture.id,
+      "cuid",
+      ["bash"]
+    );
+    expect(notebooksReducer(state, action)).toEqual({
+      ...state,
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [
+              {
+                containerId: containerFixture.id,
+                type: "terminal",
+                id: "cuid",
+                command: ["bash"],
               },
             ],
           },

@@ -1,3 +1,4 @@
+import cuid from "cuid";
 import { cloneableGenerator } from "@redux-saga/testing-utils";
 import { call, put } from "redux-saga/effects";
 import {
@@ -12,6 +13,7 @@ import {
   createNotebookContainerAction,
   createNotebookFailureAction,
   createNotebookSuccessAction,
+  createTerminalCellAction,
   executeCommandInContainerAction,
   getNotebookByIdAction,
   getNotebookFailureAction,
@@ -24,6 +26,8 @@ import {
   getNotebookByIdSaga,
 } from "../NotebookSagas";
 import { containerFixture } from "../__fixtures__/NotebookTestFixtures";
+
+jest.mock("cuid");
 
 describe("createNotebookSaga", function () {
   test("createNotebookSaga:success", function () {
@@ -162,18 +166,14 @@ describe("createNotebookContainerSaga", function () {
 
 describe("executeCommandInContainerSaga", function () {
   test("does nothing for missing container", function () {
-    const action = executeCommandInContainerAction("nid", "cid", "cellId", [
-      "bash",
-    ]);
+    const action = executeCommandInContainerAction("nid", "cid", ["bash"]);
     const gen = executeCommandInContainerSaga(action);
     // @ts-expect-error Deep comparison of anonymous function does not work
     expect(gen.next().value.type).toEqual("SELECT");
     expect(gen.next(undefined).done).toEqual(true);
   });
   test("does nothing for pending container", function () {
-    const action = executeCommandInContainerAction("nid", "cid", "cellId", [
-      "bash",
-    ]);
+    const action = executeCommandInContainerAction("nid", "cid", ["bash"]);
     const gen = executeCommandInContainerSaga(action);
     // @ts-expect-error Deep comparison of anonymous function does not work
     expect(gen.next().value.type).toEqual("SELECT");
@@ -182,19 +182,22 @@ describe("executeCommandInContainerSaga", function () {
     );
   });
   test("sends execute command for running container", function () {
-    const action = executeCommandInContainerAction("nid", "cid", "cellId", [
-      "bash",
-    ]);
+    // @ts-expect-error
+    cuid.mockReturnValue("cuid-mock");
+    const action = executeCommandInContainerAction("nid", "cid", ["bash"]);
     const gen = executeCommandInContainerSaga(action);
     // @ts-expect-error Deep comparison of anonymous function does not work
     expect(gen.next().value.type).toEqual("SELECT");
     expect(gen.next({ ...containerFixture, status: "running" }).value).toEqual(
+      put(createTerminalCellAction("nid", "cid", "cuid-mock", ["bash"]))
+    );
+    expect(gen.next().value).toEqual(
       put(
         sendWebsocketMessageAction(
           "cid",
           CONTAINER_COMMAND_EXEC_EVENT_NAME,
           JSON.stringify({
-            cell_id: "cellId",
+            cell_id: "cuid-mock",
             interactive: false,
             use_tty: false,
             timeout: -1,

@@ -2,12 +2,14 @@ import {
   createNotebookAction,
   createNotebookFailureAction,
   createNotebookSuccessAction,
+  createTerminalCellAction,
   executeCommandInContainerAction,
   NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
   NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_CREATE_FAILURE_ACTION_TYPE,
   NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE,
+  NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   updateNotebookContainerStatusAction,
 } from "../NotebookActions";
 
@@ -51,13 +53,12 @@ test("createNotebookFailureAction", () => {
 
 test("executeCommandInContainerAction", function () {
   expect(
-    executeCommandInContainerAction("nbid", "containerId", "cellId", ["bash"])
+    executeCommandInContainerAction("nbid", "containerId", ["bash"])
   ).toEqual({
     type: NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
     payload: {
       notebookId: "nbid",
       containerId: "containerId",
-      cellId: "cellId",
       command: ["bash"],
       interactive: false,
       useTty: false,
@@ -73,6 +74,18 @@ test("updateNotebookContainerStatusAction", function () {
       notebookId: "nid",
       containerId: "cid",
       status: "running",
+    },
+  });
+});
+
+test("createTerminalCellAction", function () {
+  expect(createTerminalCellAction("nbid", "cid", "random", ["bash"])).toEqual({
+    type: NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
+    payload: {
+      notebookId: "nbid",
+      cellId: "random",
+      containerId: "cid",
+      command: ["bash"],
     },
   });
 });

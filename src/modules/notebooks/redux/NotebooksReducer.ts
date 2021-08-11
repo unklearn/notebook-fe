@@ -4,11 +4,13 @@ import { ContainerConfiguration, NotebookModel } from "../NotebookTypes";
 import {
   CreateNotebookAction,
   CreateNotebookContainerAction,
+  CreateTerminalCellInNotebookAction,
   GetNotebookByIdSuccessAction,
   NotebookActions,
   NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE,
   NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
+  NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE,
   UpdateNotebookContainerStatusAction,
 } from "./NotebookActions";
@@ -151,6 +153,32 @@ function updateContainerStatusReducer(
   }) as NotebooksReduxState;
 }
 
+/**
+ * Add a new terminal cell to the notebook
+ * @param state The redux state
+ * @param action
+ */
+function addTerminalCellReducer(
+  state: NotebooksReduxState,
+  action: CreateTerminalCellInNotebookAction
+) {
+  const { notebookId, containerId, cellId, command } = action.payload;
+  const notebook = state.byIds[notebookId];
+  if (!notebook) {
+    return state;
+  }
+  const path = ["byIds", notebookId, "data", "cells"];
+  const cells = nestedDeepGet(state, path) || [];
+  return nestedDeepAssign(state, ["byIds", notebookId, "data"], {
+    cells: cells.concat({
+      id: cellId,
+      containerId,
+      command,
+      type: "terminal",
+    }),
+  }) as NotebooksReduxState;
+}
+
 export function notebooksReducer(
   state: NotebooksReduxState = INITIAL_STATE,
   action: NotebookActions
@@ -164,6 +192,8 @@ export function notebooksReducer(
       return addConditionalContainerReducer(state, action);
     case NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE:
       return updateContainerStatusReducer(state, action);
+    case NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE:
+      return addTerminalCellReducer(state, action);
   }
   return state;
 }

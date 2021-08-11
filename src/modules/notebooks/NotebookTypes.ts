@@ -5,17 +5,17 @@ export interface NotebookModel {
   // Store container configs
   containers: ContainerConfiguration[];
   // cells
-  cells: INotebookCell[];
+  cells: NotebookCell[];
 }
 
-export interface INotebookCell {
-  // A unique short id for the cell
+export interface TerminalCell {
   id: string;
-  // The index of the cell in cells array
-  index: number;
-  // A getter for cell type
-  getType(): string;
+  type: "terminal";
+  command: string[];
+  containerId: string;
 }
+
+export type NotebookCell = TerminalCell;
 
 export interface ContainerConfiguration {
   id: string;
