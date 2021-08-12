@@ -15,7 +15,13 @@ export interface TerminalCell {
   containerId: string;
 }
 
-export type NotebookCell = TerminalCell;
+export interface MarkdownCell {
+  id: string;
+  type: "markdown";
+  content: string;
+}
+
+export type NotebookCell = TerminalCell | MarkdownCell;
 
 export interface ContainerConfiguration {
   id: string;

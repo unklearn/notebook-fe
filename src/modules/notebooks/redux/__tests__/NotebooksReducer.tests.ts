@@ -1,4 +1,5 @@
 import {
+  createMarkdownCellAction,
   createNotebookAction,
   createNotebookContainerAction,
   createTerminalCellAction,
@@ -112,6 +113,44 @@ describe("notebooksReducer", function () {
                 type: "terminal",
                 id: "cuid",
                 command: ["bash"],
+              },
+            ],
+          },
+          status: "done",
+        },
+      },
+    });
+  });
+
+  test("addMarkdownCellReducer", function () {
+    const state: NotebooksReduxState = {
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [],
+          },
+          status: "done",
+        },
+      },
+      filtered: {},
+    };
+    const action = createMarkdownCellAction(
+      notebookFixture.id,
+      "cuid",
+      "Hello"
+    );
+    expect(notebooksReducer(state, action)).toEqual({
+      ...state,
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [
+              {
+                type: "markdown",
+                id: "cuid",
+                content: "Hello",
               },
             ],
           },

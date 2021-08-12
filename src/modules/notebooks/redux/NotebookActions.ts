@@ -16,6 +16,8 @@ export const NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE =
   "notebooks/execute-command";
 export const NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE =
   "notebooks/create-terminal-cell";
+export const NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE =
+  "notebooks/create-markdown-cell";
 
 /**
  * Represents a create notebook action payload
@@ -104,6 +106,15 @@ export interface CreateTerminalCellInNotebookAction {
     cellId: string;
     command: string[];
     containerId: string;
+  };
+}
+
+export interface CreateMarkdownCellInNotebookAction {
+  type: typeof NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    cellId: string;
+    content: string;
   };
 }
 
@@ -301,6 +312,27 @@ export function createTerminalCellAction(
   };
 }
 
+/**
+ * Action to create a new markdown cell
+ * @param notebookId The id of the notebook
+ * @param cellId The id of the cell
+ * @param content The content of the cell
+ */
+export function createMarkdownCellAction(
+  notebookId: string,
+  cellId: string,
+  content: string
+): CreateMarkdownCellInNotebookAction {
+  return {
+    type: NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE,
+    payload: {
+      notebookId,
+      cellId,
+      content,
+    },
+  };
+}
+
 // Export all possible notebook actions here
 export type NotebookActions =
   | CreateNotebookAction
@@ -312,4 +344,5 @@ export type NotebookActions =
   | GetNotebookByIdFailureAction
   | GetNotebookByIdSuccessAction
   | ExecuteCommandInContainerAction
-  | CreateTerminalCellInNotebookAction;
+  | CreateTerminalCellInNotebookAction
+  | CreateMarkdownCellInNotebookAction;

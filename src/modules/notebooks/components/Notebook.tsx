@@ -1,8 +1,11 @@
 import React from "react";
-import { ContainerConfigurationsPanel } from "./ContainerConfigurationsPanel";
-import { NotebookCell, NotebookModel, TerminalCell } from "../NotebookTypes";
+import cuid from "cuid";
+import { NotebookCell, NotebookModel } from "../NotebookTypes";
 import { ContainerConfigurationPanelContainer } from "../containers/ContainerConfigurationPanelContainer";
 import { TerminalCellComponent } from "../../cells/components/TerminalCell";
+import { store } from "../../../redux/Store";
+import { createMarkdownCellAction } from "../redux/NotebookActions";
+import { MarkdownCell } from "../../cells/components/MarkdownCell";
 
 export interface NotebookProps {
   // id of the notebook
@@ -12,39 +15,7 @@ export interface NotebookProps {
 export class Notebook extends React.Component<NotebookProps> {
   constructor(props: NotebookProps) {
     super(props);
-    // this.state = {
-    //     configs: props.containerConfigurations || [],
-    //     channelMap: {},
-    //     cells: []
-    // };
-    // if (this.props.socket) {
-    //     const rootCh = this.setupRootChannel(props.socket);
-    //     if (rootCh) {
-    //         this.state.channelMap.root = rootCh;
-    //     }
-    // }
   }
-
-  // setupRootChannel(socket?: WebSocketMultiplex) {
-  //     if (socket) {
-  //         const rootCh = socket.channel(this.props.id);
-  //         this.addRootChannelHandlers(rootCh);
-  //         return rootCh;
-  //     }
-  // }
-
-  // componentDidUpdate(prevProps: NotebookProps) {
-  //     if (prevProps.socket !== this.props.socket) {
-  //         const rootCh = this.setupRootChannel(this.props.socket)
-  //         if (rootCh) {
-  //             this.setState({
-  //                 channelMap: {
-  //                     [this.props.id]: rootCh
-  //                 }
-  //             })
-  //         }
-  //     }
-  // }
 
   render() {
     const { notebook } = this.props;
@@ -60,7 +31,12 @@ export class Notebook extends React.Component<NotebookProps> {
           {/* Runtime configurations go first */}
 
           <ContainerConfigurationPanelContainer notebookId={notebook.id} />
-
+          <button
+            className="button is-small is-warning"
+            onClick={this.handleDocAdd}
+          >
+            Add documentation
+          </button>
           <section className="section">
             {notebook.cells.map(this.renderCells)}
           </section>
@@ -72,25 +48,17 @@ export class Notebook extends React.Component<NotebookProps> {
   renderCells(cell: NotebookCell) {
     if (cell.type === "terminal") {
       return <TerminalCellComponent key={cell.id} {...cell} />;
+    } else if (cell.type === "markdown") {
+      return <MarkdownCell key={cell.id} content={cell.content} />;
     }
   }
 
-  // handleDocAdd = () => {
-  //     this.setState({
-  //         cells: this.state.cells.concat([<MarkdownCell key={this.state.cells.length} />])
-  //     })
-  // };
-
-  // handleNewContainer = (config: ContainerConfiguration) => {
-  //     // Add it to containerConfigurations
-  //     this.setState({
-  //         configs: this.state.configs.concat([config])
-  //     })
-  //     // Advertise via root socket
-  //     const rootChannel = this.state.channelMap[this.props.id];
-  //     if (rootChannel) {
-
-  // }
+  handleDocAdd = () => {
+    const cellId = cuid();
+    store.dispatch(
+      createMarkdownCellAction(this.props.notebook.id, cellId, "")
+    );
+  };
 
   // addRootChannelHandlers = (root: MxedChannel) => {
   //     root.addEventListener('message', (payload: { type: string, data: ArrayBuffer }) => {

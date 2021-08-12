@@ -1,4 +1,5 @@
 import {
+  createMarkdownCellAction,
   createNotebookAction,
   createNotebookFailureAction,
   createNotebookSuccessAction,
@@ -8,6 +9,7 @@ import {
   NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_CREATE_FAILURE_ACTION_TYPE,
+  NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE,
   NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE,
   NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   updateNotebookContainerStatusAction,
@@ -86,6 +88,17 @@ test("createTerminalCellAction", function () {
       cellId: "random",
       containerId: "cid",
       command: ["bash"],
+    },
+  });
+});
+
+test("createMarkdownCellAction", function () {
+  expect(createMarkdownCellAction("nbid", "cid", "###Heading3")).toEqual({
+    type: NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE,
+    payload: {
+      notebookId: "nbid",
+      cellId: "cid",
+      content: "###Heading3",
     },
   });
 });

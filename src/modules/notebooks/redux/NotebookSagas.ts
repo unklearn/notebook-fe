@@ -142,6 +142,7 @@ export function* executeCommandInContainerSaga(
   }
 }
 // A callback registry to call callbacks for
+// TODO: Tharun put this in redux store ? Does that even make sense ?
 export const CellSocketCallbackRegistry: {
   [cellId: string]: Function[];
 } = {};

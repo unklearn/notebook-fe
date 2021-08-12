@@ -2,6 +2,7 @@ import { ModelStatus } from "../../../redux/Types";
 import { nestedDeepAssign, nestedDeepGet } from "../../../utils/ObjectUtils";
 import { ContainerConfiguration, NotebookModel } from "../NotebookTypes";
 import {
+  CreateMarkdownCellInNotebookAction,
   CreateNotebookAction,
   CreateNotebookContainerAction,
   CreateTerminalCellInNotebookAction,
@@ -10,6 +11,7 @@ import {
   NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE,
   NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
+  NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE,
   NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE,
   UpdateNotebookContainerStatusAction,
@@ -179,6 +181,31 @@ function addTerminalCellReducer(
   }) as NotebooksReduxState;
 }
 
+/**
+ * Add a new markdown cell to the notebook
+ * @param state The redux state corresponding to the notebook
+ * @param action The payload corresponding to the markdown cell
+ */
+function addMarkdownCellReducer(
+  state: NotebooksReduxState,
+  action: CreateMarkdownCellInNotebookAction
+): NotebooksReduxState {
+  const { notebookId, content, cellId } = action.payload;
+  const notebook = state.byIds[notebookId];
+  if (!notebook) {
+    return state;
+  }
+  const path = ["byIds", notebookId, "data", "cells"];
+  const cells = nestedDeepGet(state, path) || [];
+  return nestedDeepAssign(state, ["byIds", notebookId, "data"], {
+    cells: cells.concat({
+      id: cellId,
+      content,
+      type: "markdown",
+    }),
+  }) as NotebooksReduxState;
+}
+
 export function notebooksReducer(
   state: NotebooksReduxState = INITIAL_STATE,
   action: NotebookActions
@@ -194,6 +221,8 @@ export function notebooksReducer(
       return updateContainerStatusReducer(state, action);
     case NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE:
       return addTerminalCellReducer(state, action);
+    case NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE:
+      return addMarkdownCellReducer(state, action);
   }
   return state;
 }

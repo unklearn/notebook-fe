@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { ITerminalAddon, ITheme, Terminal } from "xterm";
-import { AttachAddon } from "xterm-addon-attach";
+import { ITheme, Terminal } from "xterm";
 import { CONTAINER_COMMAND_INPUT_EVENT_NAME } from "../../channels/ChannelTypes";
 import { sendWebsocketMessageAction } from "../../connection/WebsocketActions";
 import { TerminalCell } from "../../notebooks/NotebookTypes";
@@ -33,6 +32,9 @@ export const TerminalCellComponent: React.FC<TerminalCell> = ({ id }) => {
     terminal.loadAddon(addon);
     // @ts-expect-error
     terminal.open(document.getElementById(id));
+    return () => {
+      terminal.dispose();
+    };
   }, [id]);
 
   function sendTerminalData(id: string, data: string | ArrayBufferLike) {
