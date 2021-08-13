@@ -21,7 +21,15 @@ export interface MarkdownCell {
   content: string;
 }
 
-export type NotebookCell = TerminalCell | MarkdownCell;
+export interface FileCell {
+  id: string;
+  type: "file";
+  filePath: string;
+  containerId: string;
+  content: string;
+}
+
+export type NotebookCell = TerminalCell | MarkdownCell | FileCell;
 
 export interface ContainerConfiguration {
   id: string;

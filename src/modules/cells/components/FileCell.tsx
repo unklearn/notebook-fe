@@ -1,16 +1,23 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
+import {
+  syncFileAction,
+  updateFileCellAction,
+} from "../../notebooks/redux/NotebookActions";
 import { CodeEditor } from "./CodeEditor";
 
 export interface FileCellProps {
+  notebookId: string;
   containerId: string;
+  cellId: string;
   filePath: string;
-  fileContents?: string;
-  onPathChange: (containerId: string, filePath: string) => void;
-  onContentChange: (
-    containerId: string,
-    filePath: string,
-    fileContents: string
-  ) => void;
+  content?: string;
+  // onPathChange: (containerId: string, filePath: string) => void;
+  // onContentChange: (
+  //   containerId: string,
+  //   filePath: string,
+  //   fileContents: string
+  // ) => void;
 }
 
 const extToMode = {
@@ -18,13 +25,20 @@ const extToMode = {
 };
 
 export const FileCell: React.FC<FileCellProps> = ({
+  notebookId,
+  cellId,
   containerId,
   filePath,
-  onPathChange,
-  onContentChange,
-  fileContents,
+  content,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    // Sync contents on path change
+    dispatch(
+      syncFileAction(notebookId, containerId, cellId, filePath, content)
+    );
+  }, [filePath]);
   return (
     <div className="unk-file-cell box">
       <div className="unk-file-cell__path">
@@ -34,12 +48,8 @@ export const FileCell: React.FC<FileCellProps> = ({
           defaultValue={filePath}
           onKeyDown={handleKeyDown}
         />
-        {fileContents && (
-          <CodeEditor
-            code={fileContents}
-            mode={getMode()}
-            onSave={updateContent}
-          />
+        {content && (
+          <CodeEditor code={content} mode={getMode()} onSave={updateContent} />
         )}
       </div>
     </div>
@@ -47,7 +57,7 @@ export const FileCell: React.FC<FileCellProps> = ({
 
   function updateContent(code: string) {
     if (inputRef.current) {
-      onContentChange(containerId, inputRef.current.value, code);
+      // onContentChange(containerId, inputRef.current.value, code);
     }
   }
 
@@ -69,7 +79,10 @@ export const FileCell: React.FC<FileCellProps> = ({
   function handleKeyDown(event: React.KeyboardEvent) {
     if (event.key === "Enter") {
       const value = (event.target as HTMLInputElement).value;
-      onPathChange(containerId, value);
+      // onPathChange(containerId, value);
+      dispatch(
+        updateFileCellAction(notebookId, containerId, cellId, value, "")
+      );
     }
   }
 };

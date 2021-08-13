@@ -1,4 +1,5 @@
 import {
+  createFileCellAction,
   createMarkdownCellAction,
   createNotebookAction,
   createNotebookFailureAction,
@@ -9,9 +10,14 @@ import {
   NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_CREATE_FAILURE_ACTION_TYPE,
+  NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE,
   NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE,
   NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE,
   NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
+  NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE,
+  NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+  syncFileAction,
+  updateFileCellAction,
   updateNotebookContainerStatusAction,
 } from "../NotebookActions";
 
@@ -99,6 +105,45 @@ test("createMarkdownCellAction", function () {
       notebookId: "nbid",
       cellId: "cid",
       content: "###Heading3",
+    },
+  });
+});
+
+test("syncFileAction", function () {
+  expect(syncFileAction("nbid", "cid", "cellId", "/var/fb/1")).toEqual({
+    type: NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE,
+    payload: {
+      notebookId: "nbid",
+      cellId: "cellId",
+      containerId: "cid",
+      filePath: "/var/fb/1",
+    },
+  });
+});
+
+test("createFileCellAction", function () {
+  expect(
+    createFileCellAction("nbid", "cid", "/var/fb/1", "", "cellId")
+  ).toEqual({
+    type: NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE,
+    payload: {
+      notebookId: "nbid",
+      cellId: "cellId",
+      containerId: "cid",
+      content: "",
+      filePath: "/var/fb/1",
+    },
+  });
+});
+
+test("updateFileCellAction", function () {
+  expect(updateFileCellAction("nbid", "cid", "cellId", "/var/fb/1")).toEqual({
+    type: NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+    payload: {
+      notebookId: "nbid",
+      cellId: "cellId",
+      containerId: "cid",
+      filePath: "/var/fb/1",
     },
   });
 });

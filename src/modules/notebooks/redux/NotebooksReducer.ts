@@ -1,7 +1,12 @@
 import { ModelStatus } from "../../../redux/Types";
 import { nestedDeepAssign, nestedDeepGet } from "../../../utils/ObjectUtils";
-import { ContainerConfiguration, NotebookModel } from "../NotebookTypes";
 import {
+  ContainerConfiguration,
+  NotebookCell,
+  NotebookModel,
+} from "../NotebookTypes";
+import {
+  CreateFileCellInNotebookAction,
   CreateMarkdownCellInNotebookAction,
   CreateNotebookAction,
   CreateNotebookContainerAction,
@@ -11,9 +16,12 @@ import {
   NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE,
   NOTEBOOK_CONTAINER_UPDATE_STATUS_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
+  NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE,
   NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE,
   NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE,
+  NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+  UpdateFileCellInNotebookAction,
   UpdateNotebookContainerStatusAction,
 } from "./NotebookActions";
 
@@ -206,6 +214,58 @@ function addMarkdownCellReducer(
   }) as NotebooksReduxState;
 }
 
+/**
+ * Add a new file cell for a container in the notebook
+ * @param state NotebooksReduxState The redux state
+ * @param action The action to create file cell
+ */
+function addFileCellReducer(
+  state: NotebooksReduxState,
+  action: CreateFileCellInNotebookAction
+): NotebooksReduxState {
+  const { notebookId, containerId, filePath, content, cellId } = action.payload;
+  const notebook = state.byIds[notebookId];
+  if (!notebook) {
+    return state;
+  }
+  const path = ["byIds", notebookId, "data", "cells"];
+  const cells = nestedDeepGet(state, path) || [];
+  return nestedDeepAssign(state, ["byIds", notebookId, "data"], {
+    cells: cells.concat({
+      id: cellId,
+      content,
+      filePath,
+      containerId,
+      type: "file",
+    }),
+  }) as NotebooksReduxState;
+}
+
+function updateFileCellReducer(
+  state: NotebooksReduxState,
+  action: UpdateFileCellInNotebookAction
+): NotebooksReduxState {
+  const { notebookId, filePath, content, cellId } = action.payload;
+  const notebook = state.byIds[notebookId];
+  if (!notebook) {
+    return state;
+  }
+  const path = ["byIds", notebookId, "data", "cells"];
+  const cells = (nestedDeepGet(state, path) || []).map((c: NotebookCell) => {
+    if (c.id === cellId) {
+      return {
+        ...c,
+        filePath,
+        content,
+      };
+    }
+    return c;
+  });
+  return nestedDeepAssign(state, ["byIds", notebookId, "data"], {
+    cells,
+  }) as NotebooksReduxState;
+}
+
 export function notebooksReducer(
   state: NotebooksReduxState = INITIAL_STATE,
   action: NotebookActions
@@ -223,6 +283,10 @@ export function notebooksReducer(
       return addTerminalCellReducer(state, action);
     case NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE:
       return addMarkdownCellReducer(state, action);
+    case NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE:
+      return addFileCellReducer(state, action);
+    case NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE:
+      return updateFileCellReducer(state, action);
   }
   return state;
 }

@@ -6,6 +6,7 @@ import { TerminalCellComponent } from "../../cells/components/TerminalCell";
 import { store } from "../../../redux/Store";
 import { createMarkdownCellAction } from "../redux/NotebookActions";
 import { MarkdownCell } from "../../cells/components/MarkdownCell";
+import { FileCell } from "../../cells/components/FileCell";
 
 export interface NotebookProps {
   // id of the notebook
@@ -21,12 +22,10 @@ export class Notebook extends React.Component<NotebookProps> {
     const { notebook } = this.props;
     return (
       <div className="unk-notebook">
-        <div className="box">
-          <section className="hero is-primary">
-            <div className="hero-body">
-              <p className="title">{notebook.name}</p>
-              <p className="subtitle">{notebook.description}</p>
-            </div>
+        <div>
+          <section>
+            <p className="title">{notebook.name}</p>
+            <p className="subtitle">{notebook.description}</p>
           </section>
           {/* Runtime configurations go first */}
 
@@ -38,7 +37,7 @@ export class Notebook extends React.Component<NotebookProps> {
             Add documentation
           </button>
           <section className="section">
-            {notebook.cells.map(this.renderCells)}
+            {notebook.cells.map((c) => this.renderCells(c))}
           </section>
         </div>
       </div>
@@ -50,6 +49,17 @@ export class Notebook extends React.Component<NotebookProps> {
       return <TerminalCellComponent key={cell.id} {...cell} />;
     } else if (cell.type === "markdown") {
       return <MarkdownCell key={cell.id} content={cell.content} />;
+    } else if (cell.type === "file") {
+      return (
+        <FileCell
+          key={cell.id}
+          notebookId={this.props.notebook.id}
+          containerId={cell.containerId}
+          cellId={cell.id}
+          content={cell.content}
+          filePath={cell.filePath}
+        />
+      );
     }
   }
 

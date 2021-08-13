@@ -3,6 +3,8 @@ import { call, put, select, takeEvery } from "redux-saga/effects";
 import {
   CONTAINER_COMMAND_EXEC_EVENT_NAME,
   CONTAINER_COMMAND_OUTPUT_EVENT_NAME,
+  CONTAINER_FILE_OUTPUT_EVENT_NAME,
+  CONTAINER_READ_FILE_EVENT_NAME,
   CONTAINER_START_EVENT_NAME,
   CONTAINER_STATUS_EVENT_NAME,
 } from "../../channels/ChannelTypes";
@@ -27,9 +29,14 @@ import {
   NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_ACTION_TYPE,
+  NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE,
+  SyncFileInContainerAction,
 } from "./NotebookActions";
 import { selectContainerByIdFactory } from "./NotebookSelectors";
-import { notebookContainerStatusSocketEventAction } from "./NotebookSocketEvents";
+import {
+  fileOutputSocketEventAction,
+  notebookContainerStatusSocketEventAction,
+} from "./NotebookSocketEvents";
 
 /**
  * Saga that handles the creation of a notebook
@@ -159,9 +166,29 @@ export function* handleWebsocketMessageSaga(action: WebsocketMessageAction) {
         callbacks.forEach((callback) => callback(action.payload.data));
       }
       break;
+    case CONTAINER_FILE_OUTPUT_EVENT_NAME:
+      yield put(fileOutputSocketEventAction(action));
+      break;
     default:
       break;
   }
+}
+
+export function* syncFileSaga(action: SyncFileInContainerAction) {
+  const { notebookId, containerId, filePath, cellId, content } = action.payload;
+  yield put(
+    sendWebsocketMessageAction(
+      containerId,
+      CONTAINER_READ_FILE_EVENT_NAME,
+      JSON.stringify({
+        notebook_id: notebookId,
+        container_id: containerId,
+        file_path: filePath,
+        content,
+        cell_id: cellId,
+      })
+    )
+  );
 }
 
 export function* notebookSagaWatcher() {
@@ -175,5 +202,6 @@ export function* notebookSagaWatcher() {
     NOTEBOOK_CONTAINER_EXECUTE_COMMAND_ACTION_TYPE,
     executeCommandInContainerSaga
   );
+  yield takeEvery(NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE, syncFileSaga);
   yield takeEvery(WEBSOCKET_ON_MESSAGE, handleWebsocketMessageSaga);
 }

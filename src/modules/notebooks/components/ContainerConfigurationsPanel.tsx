@@ -323,7 +323,7 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
           <ContainerConfigurationDetails
             config={activeConfig}
             onFileAdd={() => {
-              handleFileAdd("foo");
+              handleFileAdd(activeConfig.id);
             }}
             onCommandRun={(cmd) => {
               handleCommandRun(activeConfig.id, cmd);

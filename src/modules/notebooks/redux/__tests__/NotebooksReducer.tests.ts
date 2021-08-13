@@ -1,4 +1,5 @@
 import {
+  createFileCellAction,
   createMarkdownCellAction,
   createNotebookAction,
   createNotebookContainerAction,
@@ -151,6 +152,48 @@ describe("notebooksReducer", function () {
                 type: "markdown",
                 id: "cuid",
                 content: "Hello",
+              },
+            ],
+          },
+          status: "done",
+        },
+      },
+    });
+  });
+
+  test("addFileCellReducer", function () {
+    const state: NotebooksReduxState = {
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [],
+          },
+          status: "done",
+        },
+      },
+      filtered: {},
+    };
+    const action = createFileCellAction(
+      notebookFixture.id,
+      "cuid",
+      "/var/fb/1",
+      "Hello world",
+      "coolaid"
+    );
+    expect(notebooksReducer(state, action)).toEqual({
+      ...state,
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [
+              {
+                type: "file",
+                id: "coolaid",
+                filePath: "/var/fb/1",
+                containerId: "cuid",
+                content: "Hello world",
               },
             ],
           },

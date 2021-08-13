@@ -1,3 +1,4 @@
+import cuid from "cuid";
 import { ContainerConfiguration, NotebookModel } from "../NotebookTypes";
 
 export const NOTEBOOK_CREATE_ACTION_TYPE = "notebooks/create";
@@ -18,6 +19,11 @@ export const NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE =
   "notebooks/create-terminal-cell";
 export const NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE =
   "notebooks/create-markdown-cell";
+export const NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE =
+  "notebooks/create-file-cell";
+export const NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE =
+  "notebooks/update-file-cell";
+export const NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE = "notebooks/sync-file";
 
 /**
  * Represents a create notebook action payload
@@ -115,6 +121,39 @@ export interface CreateMarkdownCellInNotebookAction {
     notebookId: string;
     cellId: string;
     content: string;
+  };
+}
+
+export interface CreateFileCellInNotebookAction {
+  type: typeof NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    containerId: string;
+    cellId: string;
+    filePath?: string;
+    content?: string;
+  };
+}
+
+export interface UpdateFileCellInNotebookAction {
+  type: typeof NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    containerId: string;
+    cellId: string;
+    filePath: string;
+    content?: string;
+  };
+}
+
+export interface SyncFileInContainerAction {
+  type: typeof NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    containerId: string;
+    cellId: string;
+    filePath: string;
+    content?: string;
   };
 }
 
@@ -333,6 +372,84 @@ export function createMarkdownCellAction(
   };
 }
 
+/**
+ * Sync a file from container, or to container if contents are provided.
+ * @param notebookId The id of the notebook
+ * @param containerId The id of the container
+ * @param cellId     The id of the cell
+ * @param filePath   The file path inside the container
+ * @param content    The content of the file
+ */
+export function syncFileAction(
+  notebookId: string,
+  containerId: string,
+  cellId: string,
+  filePath: string,
+  content?: string
+): SyncFileInContainerAction {
+  return {
+    type: NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE,
+    payload: {
+      notebookId,
+      containerId,
+      cellId,
+      filePath,
+      content,
+    },
+  };
+}
+
+/**
+ * Create file cell in notebook
+ * @param notebookId The id of the notebook
+ * @param containerId The id of the container
+ */
+export function createFileCellAction(
+  notebookId: string,
+  containerId: string,
+  filePath?: string,
+  content?: string,
+  cellId?: string
+): CreateFileCellInNotebookAction {
+  return {
+    type: NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE,
+    payload: {
+      notebookId,
+      containerId,
+      cellId: cellId || cuid(),
+      filePath,
+      content,
+    },
+  };
+}
+
+/**
+ * Update file cell in notebook
+ * @param notebookId The id of the notebook
+ * @param containerId The id of the container
+ * @param cellId     The id of the cell
+ * @param filePath   The file path
+ * @param content    The content of the file
+ */
+export function updateFileCellAction(
+  notebookId: string,
+  containerId: string,
+  cellId: string,
+  filePath: string,
+  content?: string
+): UpdateFileCellInNotebookAction {
+  return {
+    type: NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+    payload: {
+      notebookId,
+      containerId,
+      cellId,
+      filePath,
+      content,
+    },
+  };
+}
+
 // Export all possible notebook actions here
 export type NotebookActions =
   | CreateNotebookAction
@@ -345,4 +462,7 @@ export type NotebookActions =
   | GetNotebookByIdSuccessAction
   | ExecuteCommandInContainerAction
   | CreateTerminalCellInNotebookAction
-  | CreateMarkdownCellInNotebookAction;
+  | CreateMarkdownCellInNotebookAction
+  | CreateFileCellInNotebookAction
+  | UpdateFileCellInNotebookAction
+  | SyncFileInContainerAction;

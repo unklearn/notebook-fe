@@ -4,8 +4,10 @@ import { RootState } from "../../../redux/Store";
 import { ContainerConfigurationsPanel } from "../components/ContainerConfigurationsPanel";
 import { ContainerConfiguration } from "../NotebookTypes";
 import {
+  createFileCellAction,
   createNotebookContainerAction,
   executeCommandInContainerAction,
+  syncFileAction,
 } from "../redux/NotebookActions";
 import { selectNotebookByIdFactory } from "../redux/NotebookSelectors";
 
@@ -32,7 +34,8 @@ function mapDispatchToProps(
   return {
     onCreateNew: (config: ContainerConfiguration) =>
       dispatch(createNotebookContainerAction(ownProps.notebookId, config)),
-    handleFileAdd: console.log,
+    handleFileAdd: (containerId: string) =>
+      dispatch(createFileCellAction(ownProps.notebookId, containerId)),
     handleDocAdd: console.log,
     handleCommandRun: (containerId: string, cmd: string) =>
       dispatch(
