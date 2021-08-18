@@ -5,6 +5,9 @@ export const NOTEBOOK_CREATE_ACTION_TYPE = "notebooks/create";
 export const NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE = "notebooks/create:success";
 export const NOTEBOOK_CREATE_FAILURE_ACTION_TYPE = "notebooks/create:failure";
 export const NOTEBOOK_GET_BY_ID_ACTION_TYPE = "notebooks/get-by-id";
+export const NOTEBOOK_UPDATE_ACTION_TYPE = "notebooks/update";
+export const NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE = "notebooks/update:success";
+export const NOTEBOOK_UPDATE_FAILURE_ACTION_TYPE = "notebooks/update:failure";
 export const NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE =
   "notebooks/get-by-id:success";
 export const NOTEBOOK_GET_BY_ID_FAILURE_ACTION_TYPE =
@@ -47,6 +50,27 @@ export interface CreateNotebookFailureAction {
   type: typeof NOTEBOOK_CREATE_FAILURE_ACTION_TYPE;
   payload: {
     hash: string;
+    error: string;
+  };
+}
+
+/**
+ * Represents a create notebook action payload
+ */
+export interface UpdateNotebookAction {
+  type: typeof NOTEBOOK_UPDATE_ACTION_TYPE;
+  payload: NotebookModel;
+}
+
+export interface UpdateNotebookSuccessAction {
+  type: typeof NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE;
+  payload: NotebookModel;
+}
+
+export interface UpdateNotebookFailureAction {
+  type: typeof NOTEBOOK_UPDATE_FAILURE_ACTION_TYPE;
+  payload: {
+    id: string;
     error: string;
   };
 }
@@ -208,6 +232,59 @@ export function createNotebookFailureAction(
     type: NOTEBOOK_CREATE_FAILURE_ACTION_TYPE,
     payload: {
       hash,
+      error,
+    },
+  };
+}
+
+/**
+ * @param notebookData The notebook data payload
+ * @returns action
+ */
+export function updateNotebookAction(
+  notebookData: NotebookModel
+): UpdateNotebookAction {
+  return {
+    type: NOTEBOOK_UPDATE_ACTION_TYPE,
+    payload: {
+      ...notebookData,
+    },
+  };
+}
+
+/**
+ * An action to dispatch after notebook is sucessfully updated
+ * @param id THe hash of notebook
+ * @param notebook Notebook payload
+ * @returns action: CreateNotebookSuccessAction
+ */
+export function updateNotebookSuccessAction(
+  id: string,
+  notebook: NotebookModel
+): UpdateNotebookSuccessAction {
+  return {
+    type: NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE,
+    payload: {
+      ...notebook,
+      id,
+    },
+  };
+}
+
+/**
+ * An action to dispatch if update notebook action fails
+ * @param id The id of the notebook
+ * @param error The error associated with creating notebook
+ * @returns
+ */
+export function updateNotebookFailureAction(
+  id: string,
+  error: string
+): UpdateNotebookFailureAction {
+  return {
+    type: NOTEBOOK_UPDATE_FAILURE_ACTION_TYPE,
+    payload: {
+      id,
       error,
     },
   };
@@ -465,4 +542,7 @@ export type NotebookActions =
   | CreateMarkdownCellInNotebookAction
   | CreateFileCellInNotebookAction
   | UpdateFileCellInNotebookAction
-  | SyncFileInContainerAction;
+  | SyncFileInContainerAction
+  | UpdateNotebookAction
+  | UpdateNotebookSuccessAction
+  | UpdateNotebookFailureAction;

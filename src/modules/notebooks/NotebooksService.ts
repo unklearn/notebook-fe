@@ -1,5 +1,8 @@
 import { fetch } from "../../utils/Fetch";
-import { CreateNotebookAction } from "./redux/NotebookActions";
+import {
+  CreateNotebookAction,
+  UpdateNotebookAction,
+} from "./redux/NotebookActions";
 import { NotebookModel } from "./NotebookTypes";
 
 export class NotebookServiceError extends Error {
@@ -33,6 +36,31 @@ export class NotebookService {
     });
     const body = await response.json();
     if (response.status === 201) {
+      return body as NotebookModel;
+    } else {
+      throw new NotebookServiceError(body.code, body.message);
+    }
+  }
+
+  /**
+   * Update a new notebook
+   * @param payload The payload for updating a notebook
+   * @returns The updated notebook if successful
+   * @throws NotebookServiceError if operation fails
+   */
+  static async updateNotebook(
+    id: string,
+    payload: UpdateNotebookAction["payload"]
+  ): Promise<NotebookModel> {
+    const response: Response = await fetch(`/api/v1/notebooks/${id}`, {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const body = await response.json();
+    if (response.status === 200) {
       return body as NotebookModel;
     } else {
       throw new NotebookServiceError(body.code, body.message);

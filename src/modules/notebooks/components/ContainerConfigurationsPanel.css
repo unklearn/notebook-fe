@@ -1,5 +1,10 @@
 .unk-container-configurations-panel {
+    position: relative;
 }
 
 .unk-container-configuration-details {
+    position: absolute;
+    width: 70%;
+    z-index: 3;
+    top: 60px;
 }

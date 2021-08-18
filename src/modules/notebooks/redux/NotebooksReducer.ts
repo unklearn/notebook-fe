@@ -21,8 +21,10 @@ import {
   NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE,
   NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+  NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE,
   UpdateFileCellInNotebookAction,
   UpdateNotebookContainerStatusAction,
+  UpdateNotebookSuccessAction,
 } from "./NotebookActions";
 
 export type NotebooksReduxState = {
@@ -64,6 +66,31 @@ function createNotebookReducer(
         [action.payload.id]: {
           data: action.payload as NotebookModel,
           status: "pending",
+        },
+      },
+    };
+  }
+  return state;
+}
+
+/**
+ * Update notebook success status reducer
+ * @param state Notebooks state
+ * @param action Update success action
+ * @returns updated notebooks state
+ */
+function updateNotebookReducer(
+  state: NotebooksReduxState,
+  action: UpdateNotebookSuccessAction
+): NotebooksReduxState {
+  if (action.payload.id) {
+    return {
+      ...state,
+      byIds: {
+        ...state.byIds,
+        [action.payload.id]: {
+          data: action.payload,
+          status: "done",
         },
       },
     };
@@ -273,6 +300,8 @@ export function notebooksReducer(
   switch (action.type) {
     case NOTEBOOK_CREATE_ACTION_TYPE:
       return createNotebookReducer(state, action);
+    case NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE:
+      return updateNotebookReducer(state, action);
     case NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE:
       return addNotebookReducer(state, action);
     case NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE:

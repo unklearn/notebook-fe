@@ -9,9 +9,11 @@ import { AppNavBar } from "./modules/shared/components/AppNavBar";
 function App() {
   return (
     <Router>
-      <div className="App container">
+      <div className="App">
         <AppNavBar />
-        <Route path="/notebooks/:notebookId" component={NotebookPage} />
+        <div className="container">
+          <Route path="/notebooks/:notebookId" component={NotebookPage} />
+        </div>
       </div>
     </Router>
   );

@@ -18,14 +18,21 @@ import {
   getNotebookByIdAction,
   getNotebookFailureAction,
   getNotebookSuccessAction,
+  updateNotebookAction,
+  updateNotebookFailureAction,
+  updateNotebookSuccessAction,
 } from "../NotebookActions";
 import {
   createNotebookContainerSaga,
   createNotebookSaga,
   executeCommandInContainerSaga,
   getNotebookByIdSaga,
+  updateNotebookSaga,
 } from "../NotebookSagas";
-import { containerFixture } from "../__fixtures__/NotebookTestFixtures";
+import {
+  containerFixture,
+  notebookFixture,
+} from "../__fixtures__/NotebookTestFixtures";
 
 jest.mock("cuid");
 
@@ -75,6 +82,53 @@ describe("createNotebookSaga", function () {
       put(
         createNotebookFailureAction(
           action.payload.hash,
+          "An error occurred while creating notebook"
+        )
+      )
+    );
+  });
+});
+
+describe("updateNotebookSaga", function () {
+  test("updateNotebookSaga:success", function () {
+    const notebook = {
+      ...notebookFixture,
+      description: "may day",
+    };
+    const action = updateNotebookAction(notebook);
+    const gen = updateNotebookSaga(action);
+    expect(gen.next().value).toEqual(
+      call(NotebookService.updateNotebook, action.payload.id, action.payload)
+    );
+    expect(gen.next(notebook).value).toEqual(
+      put(updateNotebookSuccessAction(action.payload.id, notebook))
+    );
+    expect(gen.next().done).toEqual(true);
+  });
+
+  test("updateNotebookSaga:failure", function () {
+    const notebook = {
+      ...notebookFixture,
+      description: "may day",
+    };
+    const action = updateNotebookAction(notebook);
+    // @ts-expect-error
+    const gen = cloneableGenerator(updateNotebookSaga)(action);
+    expect(gen.next().value).toEqual(
+      call(NotebookService.updateNotebook, action.payload.id, action.payload)
+    );
+    const err = { code: "oh-no", message: "Bye-bye" };
+    const clone = gen.clone();
+    expect(
+      // @ts-expect-error
+      gen.throw(new NotebookServiceError(err.code, err.message)).value
+    ).toEqual(put(updateNotebookFailureAction(action.payload.id, "Bye-bye")));
+    expect(gen.next().done).toEqual(true);
+    // @ts-expect-error
+    expect(clone.throw(new Error("omg")).value).toEqual(
+      put(
+        updateNotebookFailureAction(
+          action.payload.id,
           "An error occurred while creating notebook"
         )
       )

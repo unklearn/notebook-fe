@@ -1,12 +1,12 @@
-import React from "react";
 import cuid from "cuid";
-import { NotebookCell, NotebookModel } from "../NotebookTypes";
-import { ContainerConfigurationPanelContainer } from "../containers/ContainerConfigurationPanelContainer";
-import { TerminalCellComponent } from "../../cells/components/TerminalCell";
+import React from "react";
 import { store } from "../../../redux/Store";
-import { createMarkdownCellAction } from "../redux/NotebookActions";
-import { MarkdownCell } from "../../cells/components/MarkdownCell";
 import { FileCell } from "../../cells/components/FileCell";
+import { MarkdownCell } from "../../cells/components/MarkdownCell";
+import { TerminalCellComponent } from "../../cells/components/TerminalCell";
+import { NotebookCell, NotebookModel } from "../NotebookTypes";
+import { createMarkdownCellAction } from "../redux/NotebookActions";
+import { NotebookSummary } from "./NotebookSummary";
 
 export interface NotebookProps {
   // id of the notebook
@@ -24,12 +24,14 @@ export class Notebook extends React.Component<NotebookProps> {
       <div className="unk-notebook">
         <div>
           <section>
+            <NotebookSummary notebook={notebook} />
+          </section>
+          <section>
             <p className="title">{notebook.name}</p>
             <p className="subtitle">{notebook.description}</p>
           </section>
           {/* Runtime configurations go first */}
 
-          <ContainerConfigurationPanelContainer notebookId={notebook.id} />
           <button
             className="button is-small is-warning"
             onClick={this.handleDocAdd}

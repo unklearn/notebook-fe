@@ -6,6 +6,7 @@ import {
   createTerminalCellAction,
   getNotebookSuccessAction,
   updateNotebookContainerStatusAction,
+  updateNotebookSuccessAction,
 } from "../NotebookActions";
 import { notebooksReducer, NotebooksReduxState } from "../NotebooksReducer";
 import {
@@ -25,6 +26,21 @@ describe("notebooksReducer", function () {
             hash: "eyJpZCI6ImZvbyIsIm5hbWUiOiJGb28iLCJjZWxscyI6W10sImNvbnRhaW5lcnMiOltdfQ==",
           },
           status: "pending",
+        },
+      },
+      filtered: {},
+    });
+  });
+  test("updateNotebookReducer", function () {
+    const action = updateNotebookSuccessAction(
+      notebookFixture.id,
+      notebookFixture
+    );
+    expect(notebooksReducer(undefined, action)).toEqual({
+      byIds: {
+        [notebookFixture.id]: {
+          data: notebookFixture,
+          status: "done",
         },
       },
       filtered: {},

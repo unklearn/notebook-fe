@@ -30,7 +30,11 @@ import {
   NOTEBOOK_CREATE_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_ACTION_TYPE,
   NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE,
+  NOTEBOOK_UPDATE_ACTION_TYPE,
   SyncFileInContainerAction,
+  UpdateNotebookAction,
+  updateNotebookFailureAction,
+  updateNotebookSuccessAction,
 } from "./NotebookActions";
 import { selectContainerByIdFactory } from "./NotebookSelectors";
 import {
@@ -55,6 +59,31 @@ export function* createNotebookSaga(action: CreateNotebookAction) {
       yield put(
         createNotebookFailureAction(
           action.payload.hash,
+          "An error occurred while creating notebook"
+        )
+      );
+    }
+  }
+}
+
+/**
+ * Saga that handles the notebook update
+ */
+export function* updateNotebookSaga(action: UpdateNotebookAction) {
+  try {
+    const notebook: NotebookModel = yield call(
+      NotebookService.updateNotebook,
+      action.payload.id,
+      action.payload
+    );
+    yield put(updateNotebookSuccessAction(action.payload.id, notebook));
+  } catch (e) {
+    if (e instanceof NotebookServiceError) {
+      yield put(updateNotebookFailureAction(action.payload.id, e.message));
+    } else {
+      yield put(
+        updateNotebookFailureAction(
+          action.payload.id,
           "An error occurred while creating notebook"
         )
       );
@@ -194,6 +223,7 @@ export function* syncFileSaga(action: SyncFileInContainerAction) {
 export function* notebookSagaWatcher() {
   yield takeEvery(NOTEBOOK_CREATE_ACTION_TYPE, createNotebookSaga);
   yield takeEvery(NOTEBOOK_GET_BY_ID_ACTION_TYPE, getNotebookByIdSaga);
+  yield takeEvery(NOTEBOOK_UPDATE_ACTION_TYPE, updateNotebookSaga);
   yield takeEvery(
     NOTEBOOK_CONTAINER_CREATE_ACTION_TYPE,
     createNotebookContainerSaga

@@ -15,10 +15,16 @@ import {
   NOTEBOOK_CREATE_SUCCESS_ACTION_TYPE,
   NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   NOTEBOOK_SYNC_FILE_CELL_ACTION_TYPE,
+  NOTEBOOK_UPDATE_ACTION_TYPE,
+  NOTEBOOK_UPDATE_FAILURE_ACTION_TYPE,
   NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+  NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE,
   syncFileAction,
   updateFileCellAction,
+  updateNotebookAction,
   updateNotebookContainerStatusAction,
+  updateNotebookFailureAction,
+  updateNotebookSuccessAction,
 } from "../NotebookActions";
 
 const notebook = {
@@ -54,6 +60,30 @@ test("createNotebookFailureAction", () => {
     type: NOTEBOOK_CREATE_FAILURE_ACTION_TYPE,
     payload: {
       hash: "hashy",
+      error: "foo",
+    },
+  });
+});
+
+test("updateNotebookAction", () => {
+  expect(updateNotebookAction(notebook)).toEqual({
+    type: NOTEBOOK_UPDATE_ACTION_TYPE,
+    payload: notebook,
+  });
+});
+
+test("updateNotebookSuccessAction", () => {
+  expect(updateNotebookSuccessAction(notebook.id, notebook)).toEqual({
+    type: NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE,
+    payload: notebook,
+  });
+});
+
+test("updateNotebookFailureAction", () => {
+  expect(updateNotebookFailureAction("id", "foo")).toEqual({
+    type: NOTEBOOK_UPDATE_FAILURE_ACTION_TYPE,
+    payload: {
+      id: "id",
       error: "foo",
     },
   });

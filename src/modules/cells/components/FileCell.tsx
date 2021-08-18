@@ -57,7 +57,15 @@ export const FileCell: React.FC<FileCellProps> = ({
 
   function updateContent(code: string) {
     if (inputRef.current) {
-      // onContentChange(containerId, inputRef.current.value, code);
+      dispatch(
+        updateFileCellAction(
+          notebookId,
+          containerId,
+          cellId,
+          inputRef.current.value,
+          code
+        )
+      );
     }
   }
 
@@ -79,7 +87,6 @@ export const FileCell: React.FC<FileCellProps> = ({
   function handleKeyDown(event: React.KeyboardEvent) {
     if (event.key === "Enter") {
       const value = (event.target as HTMLInputElement).value;
-      // onPathChange(containerId, value);
       dispatch(
         updateFileCellAction(notebookId, containerId, cellId, value, "")
       );

@@ -1,10 +1,36 @@
 import React from "react";
+import logo from "../../../logo.svg";
+import "./AppNavBar.css";
 
 export const AppNavBar: React.FC = () => {
   return (
-    <nav className="navbar" role="navigation" aria-label="main navigation">
+    <nav
+      className="navbar App-navbar"
+      role="navigation"
+      aria-label="main navigation"
+    >
       <div className="navbar-brand">
-        <h1 className="title">Unklearn</h1>
+        <a
+          className="navbar-item"
+          href="/"
+          style={{
+            alignItems: "start",
+          }}
+        >
+          <img
+            src={logo}
+            width="40px"
+            height="40px"
+            alt="Unklearn logo"
+            style={{ height: "40px", width: "40px" }}
+          />
+          <h3
+            className="title is-3"
+            style={{ margin: "0px", marginLeft: "10px", fontWeight: 900 }}
+          >
+            Unklearn
+          </h3>
+        </a>
 
         <a
           href=""

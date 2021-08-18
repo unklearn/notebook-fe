@@ -271,6 +271,14 @@ const NewContainerConfiguration: React.FC<NewContainerConfigurationProps> = ({
   }
 };
 
+const statusToColorMap: {
+  [k in ContainerConfiguration["status"]]: string;
+} = {
+  pending: "is-info is-light",
+  running: "is-success is-light",
+  stopped: "is-danger is-light",
+};
+
 export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanelProps> =
   ({
     configurations = [],
@@ -283,17 +291,12 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
     const [addNew, setAddNew] = useState(false);
     const activeConfig = configurations.find((c) => c.name === active);
     return (
-      <section className="section unk-container-configurations-panel">
-        <div className="message">
-          <div className="message-header">
-            <p>Containers</p>
-          </div>
-          <div className="message-body">
+      <section className="unk-container-configurations-panel">
+        {/* <p>Containers</p>
+        <div>
             List of active containers for this notebook. To add a new container,
             click the "Add" button
-          </div>
-        </div>
-        <div className="block"></div>
+          </div> */}
         <div className="tabs is-small is-toggle">
           <ul>
             {configurations.map((c) => (
@@ -304,17 +307,27 @@ export const ContainerConfigurationsPanel: React.FC<ContainerConfigurationsPanel
                   active === c.name ? setActive("") : setActive(c.name)
                 }
               >
-                <a>
-                  {c.name}:{c.status}
-                </a>
+                <button
+                  className={`button is-outlined is-small ${
+                    statusToColorMap[c.status]
+                  }`}
+                  style={{
+                    margin: "5px",
+                  }}
+                >
+                  {c.name}
+                </button>
               </li>
             ))}
             <li>
               <button
-                className="button is-ghost is-small"
+                className="button is-outlined is-small"
+                style={{
+                  margin: "5px",
+                }}
                 onClick={() => setAddNew(true)}
               >
-                Add
+                Add container
               </button>
             </li>
           </ul>

@@ -8,7 +8,10 @@ import {
 } from "../../connection/WebsocketActions";
 import { Notebook } from "../components/Notebook";
 import { NotebookModel } from "../NotebookTypes";
-import { getNotebookByIdAction } from "../redux/NotebookActions";
+import {
+  getNotebookByIdAction,
+  updateNotebookAction,
+} from "../redux/NotebookActions";
 import { selectNotebookByIdFactory } from "../redux/NotebookSelectors";
 
 type NotebookIdParams = {
@@ -40,8 +43,17 @@ export const NotebookPage: React.FC = () => {
     dispatch(getNotebookByIdAction(notebookId));
   }, [notebookId]);
   return (
-    <div className="unk-page container">
+    <div className="unk-page">
+      <button className="is-info is-light" onClick={handleSave}>
+        Save
+      </button>
       {data && <Notebook notebook={data} />}
     </div>
   );
+
+  function handleSave() {
+    if (data) {
+      dispatch(updateNotebookAction(data));
+    }
+  }
 };
