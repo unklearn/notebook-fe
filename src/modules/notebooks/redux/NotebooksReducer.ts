@@ -2,6 +2,7 @@ import { ModelStatus } from "../../../redux/Types";
 import { nestedDeepAssign, nestedDeepGet } from "../../../utils/ObjectUtils";
 import {
   ContainerConfiguration,
+  MarkdownCell,
   NotebookCell,
   NotebookModel,
 } from "../NotebookTypes";
@@ -21,8 +22,10 @@ import {
   NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE,
   NOTEBOOK_GET_BY_ID_SUCCESS_ACTION_TYPE,
   NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+  NOTEBOOK_UPDATE_MARKDOWN_CELL_ACTION_TYPE,
   NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE,
   UpdateFileCellInNotebookAction,
+  UpdateMarkdownCellInNotebookAction,
   UpdateNotebookContainerStatusAction,
   UpdateNotebookSuccessAction,
 } from "./NotebookActions";
@@ -242,6 +245,35 @@ function addMarkdownCellReducer(
 }
 
 /**
+ * Update the contents of a markdown cell
+ * @param state The notebooks state
+ * @param action The update action
+ */
+function updateMarkdownCellReducer(
+  state: NotebooksReduxState,
+  action: UpdateMarkdownCellInNotebookAction
+): NotebooksReduxState {
+  const { notebookId, content, cellId } = action.payload;
+  const notebook = state.byIds[notebookId];
+  if (!notebook) {
+    return state;
+  }
+  const path = ["byIds", notebookId, "data", "cells"];
+  const cells = nestedDeepGet(state, path) || [];
+  return nestedDeepAssign(state, ["byIds", notebookId, "data"], {
+    cells: cells.map((c: MarkdownCell) => {
+      if (c.id === cellId) {
+        return {
+          ...c,
+          content,
+        };
+      }
+      return c;
+    }),
+  }) as NotebooksReduxState;
+}
+
+/**
  * Add a new file cell for a container in the notebook
  * @param state NotebooksReduxState The redux state
  * @param action The action to create file cell
@@ -312,6 +344,8 @@ export function notebooksReducer(
       return addTerminalCellReducer(state, action);
     case NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE:
       return addMarkdownCellReducer(state, action);
+    case NOTEBOOK_UPDATE_MARKDOWN_CELL_ACTION_TYPE:
+      return updateMarkdownCellReducer(state, action);
     case NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE:
       return addFileCellReducer(state, action);
     case NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE:

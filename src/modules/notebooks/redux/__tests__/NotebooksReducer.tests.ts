@@ -5,6 +5,7 @@ import {
   createNotebookContainerAction,
   createTerminalCellAction,
   getNotebookSuccessAction,
+  updateMarkdownCellAction,
   updateNotebookContainerStatusAction,
   updateNotebookSuccessAction,
 } from "../NotebookActions";
@@ -168,6 +169,50 @@ describe("notebooksReducer", function () {
                 type: "markdown",
                 id: "cuid",
                 content: "Hello",
+              },
+            ],
+          },
+          status: "done",
+        },
+      },
+    });
+  });
+
+  test("updateMarkdownCellReducer", function () {
+    const state: NotebooksReduxState = {
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [
+              {
+                id: "cuid",
+                content: "###Hello",
+                type: "markdown",
+              },
+            ],
+          },
+          status: "done",
+        },
+      },
+      filtered: {},
+    };
+    const action = updateMarkdownCellAction(
+      notebookFixture.id,
+      "cuid",
+      "###Hello World"
+    );
+    expect(notebooksReducer(state, action)).toEqual({
+      ...state,
+      byIds: {
+        [notebookFixture.id]: {
+          data: {
+            ...notebookFixture,
+            cells: [
+              {
+                type: "markdown",
+                id: "cuid",
+                content: "###Hello World",
               },
             ],
           },

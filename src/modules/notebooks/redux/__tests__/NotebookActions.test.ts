@@ -18,9 +18,11 @@ import {
   NOTEBOOK_UPDATE_ACTION_TYPE,
   NOTEBOOK_UPDATE_FAILURE_ACTION_TYPE,
   NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE,
+  NOTEBOOK_UPDATE_MARKDOWN_CELL_ACTION_TYPE,
   NOTEBOOK_UPDATE_SUCCESS_ACTION_TYPE,
   syncFileAction,
   updateFileCellAction,
+  updateMarkdownCellAction,
   updateNotebookAction,
   updateNotebookContainerStatusAction,
   updateNotebookFailureAction,
@@ -135,6 +137,17 @@ test("createMarkdownCellAction", function () {
       notebookId: "nbid",
       cellId: "cid",
       content: "###Heading3",
+    },
+  });
+});
+
+test("updateMarkdownCellAction", function () {
+  expect(updateMarkdownCellAction("nbid", "cid", "###Hello")).toEqual({
+    type: NOTEBOOK_UPDATE_MARKDOWN_CELL_ACTION_TYPE,
+    payload: {
+      notebookId: "nbid",
+      cellId: "cid",
+      content: "###Hello",
     },
   });
 });

@@ -22,6 +22,8 @@ export const NOTEBOOK_CREATE_TERMINAL_CELL_ACTION_TYPE =
   "notebooks/create-terminal-cell";
 export const NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE =
   "notebooks/create-markdown-cell";
+export const NOTEBOOK_UPDATE_MARKDOWN_CELL_ACTION_TYPE =
+  "notebooks/update-markdown-cell";
 export const NOTEBOOK_CREATE_FILE_CELL_ACTION_TYPE =
   "notebooks/create-file-cell";
 export const NOTEBOOK_UPDATE_FILE_CELL_ACTION_TYPE =
@@ -141,6 +143,15 @@ export interface CreateTerminalCellInNotebookAction {
 
 export interface CreateMarkdownCellInNotebookAction {
   type: typeof NOTEBOOK_CREATE_MARKDOWN_CELL_ACTION_TYPE;
+  payload: {
+    notebookId: string;
+    cellId: string;
+    content: string;
+  };
+}
+
+export interface UpdateMarkdownCellInNotebookAction {
+  type: typeof NOTEBOOK_UPDATE_MARKDOWN_CELL_ACTION_TYPE;
   payload: {
     notebookId: string;
     cellId: string;
@@ -450,6 +461,27 @@ export function createMarkdownCellAction(
 }
 
 /**
+ * Update a markdown cell with its content
+ * @param notebookId The id of the notebook
+ * @param cellId The id of the cell
+ * @param content The content of the cell
+ */
+export function updateMarkdownCellAction(
+  notebookId: string,
+  cellId: string,
+  content: string
+): UpdateMarkdownCellInNotebookAction {
+  return {
+    type: NOTEBOOK_UPDATE_MARKDOWN_CELL_ACTION_TYPE,
+    payload: {
+      notebookId,
+      cellId,
+      content,
+    },
+  };
+}
+
+/**
  * Sync a file from container, or to container if contents are provided.
  * @param notebookId The id of the notebook
  * @param containerId The id of the container
@@ -540,6 +572,7 @@ export type NotebookActions =
   | ExecuteCommandInContainerAction
   | CreateTerminalCellInNotebookAction
   | CreateMarkdownCellInNotebookAction
+  | UpdateMarkdownCellInNotebookAction
   | CreateFileCellInNotebookAction
   | UpdateFileCellInNotebookAction
   | SyncFileInContainerAction
